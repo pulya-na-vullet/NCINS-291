@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${section.name} + ' - Детали секции'">Детали секции</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .info-card {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .back-button {
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            transform: translateX(-5px);
+        }
+
+        .user-story-card {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .user-story-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+
+        .user-story-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .user-story-link:hover {
+            text-decoration: none;
+        }
+
+        .user-story-actions {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .user-story-card:hover .user-story-actions {
+            opacity: 1;
+        }
+
+        .confirmation-input {
+            border: 2px solid #dc3545;
+            transition: all 0.3s ease;
+        }
+
+        .confirmation-input.valid {
+            border-color: #198754;
+        }
+
+        .confirmation-input.invalid {
+            border-color: #dc3545;
+        }
+
+        .action-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .action-buttons-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .user-story-input-group {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .user-story-textarea {
+            resize: vertical;
+            min-height: 38px;
+            max-height: 150px;
+            font-family: inherit;
+            line-height: 1.5;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+        }
+
+        .import-btn {
+            height: 38px;
+            align-self: flex-start;
+        }
+
+        .input-hint {
+            color: #6c757d;
+            font-size: 0.875em;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .action-buttons-row {
+                flex-direction: column;
+            }
+
+            .user-story-input-group {
+                min-width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .import-btn {
+                width: 100%;
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body data-user-role="{{ userRole }}">
+<div class="container py-4">
+    <!-- Кнопка возврата -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="/projects/{{ section.project.id }}" class="btn btn-outline-secondary back-button">
+                <i class="fas fa-arrow-left me-2"></i>
+                Вернуться к проекту
+            </a>
+        </div>
+    </div>
+
+    <!-- Заголовок секции -->
+    <div class="row">
+        <div class="col-12">
+            <div class="section-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="mb-2">
+                            <i class="fas fa-layer-group me-3"></i>
+                            <span th:text="${section.name}">Название секции</span>
+                        </h1>
+                        <p class="mb-0 opacity-75">
+                            <i class="fas fa-hashtag me-2"></i>
+                            ID: <span th:text="${section.id}">1</span>
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <div class="badge bg-light text-dark fs-6">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            Создана: <span th:text="${#temporals.format(section.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2024 12:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Информация о секции -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card info-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Основная информация
+                    </h5>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold">Название секции:</label>
+                            <p class="mb-0 fs-5" th:text="${section.name}">Название секции</p>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold">ID секции:</label>
+                            <p class="mb-0" th:text="${section.id}">1</p>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold">Проект:</label>
+                            <p class="mb-0">
+                                <a href="/projects/{{ section.project.id }}" class="text-decoration-none">
+                                    <i class="fas fa-project-diagram me-1"></i>
+                                    <span th:text="${section.project.name}">Название проекта</span>
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card info-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-success">
+                        <i class="fas fa-clock me-2"></i>
+                        Даты
+                    </h5>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold">Дата создания:</label>
+                            <p class="mb-0" th:text="${#temporals.format(section.createdAt, 'dd.MM.yyyy HH:mm:ss')}">01.01.2024 12:00:00</p>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold">Дата последнего обновления:</label>
+                            <p class="mb-0" th:text="${#temporals.format(section.updatedAt, 'dd.MM.yyyy HH:mm:ss')}">01.01.2024 12:00:00</p>
+                        </div>
+                        <div class="col-12" th:if="${section.createdAt != section.updatedAt}">
+                            <small class="text-muted">
+                                <i class="fas fa-sync-alt me-1"></i>
+                                Секция была обновлена
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Stories секции -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-book me-2"></i>
+                        User Stories секции
+                    </h5>
+                    <span class="badge bg-light text-dark" id="userStoriesCount">0 user stories</span>
+                </div>
+                <div class="card-body">
+                    <!-- Контейнер для действий -->
+                    <div class="action-container">
+                        <div class="action-buttons-row">
+                            <!-- Поле ввода user story -->
+                            <div class="user-story-input-group">
+                                <textarea class="form-control user-story-textarea"
+                                          id="userStoryName"
+                                          placeholder="Введите название user story..."
+                                          aria-label="Название user story"
+                                          rows="1"
+                                          oninput="autoResizeTextarea(this)"></textarea>
+                                <div class="input-hint">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Для добавления нажмите Enter или кнопку "Добавить"
+                                </div>
+                            </div>
+                            <div class="user-story-input-group" id="businessCriticalityCreateWrapper" style="display:none; max-width:220px;">
+                                <label for="userStoryCriticality" class="form-label mb-1">Критичность (1-10, опц.)</label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="userStoryCriticality"
+                                       min="1"
+                                       max="10"
+                                       placeholder="Например: 7">
+                            </div>
+
+                            <!-- Кнопка добавления -->
+                            <button type="button" class="btn btn-primary" onclick="createUserStory()">
+                                <i class="fas fa-plus me-1"></i>
+                                Добавить
+                            </button>
+
+                            <!-- Кнопка импорта -->
+                            <button type="button" class="btn btn-success import-btn" onclick="openImportModal()">
+                                <i class="fas fa-file-import me-1"></i>
+                                Импорт
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Список user stories -->
+                    <div id="userStoriesList">
+                        <div id="emptyUserStories" class="text-center py-4 d-none">
+                            <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">User stories не найдены</p>
+                            <small class="text-muted">Создайте первую user story с помощью формы выше</small>
+                        </div>
+                        <div id="userStoriesContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Дополнительные действия -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-cogs me-2"></i>
+                        Действия с секцией
+                    </h5>
+                    <hr>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-outline-primary" onclick="editSection()">
+                            <i class="fas fa-edit me-1"></i>
+                            Редактировать
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="openDeleteSectionModal()">
+                            <i class="fas fa-trash me-1"></i>
+                            Удалить секцию
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Скрытое поле для передачи sectionId -->
+<div id="sectionData" data-section-id="{{ section.id }}" data-project-id="{{ section.project.id }}" style="display: none;"></div>
+
+<!-- Модальное окно редактирования секции -->
+<div class="modal fade" id="editSectionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>
+                    Редактировать секцию
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editSectionForm">
+                    <div class="mb-3">
+                        <label for="editSectionName" class="form-label">Название секции:</label>
+                        <input type="text"
+                               class="form-control"
+                               id="editSectionName"
+                               th:value="${section.name}"
+                               required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveSectionBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно редактирования user story -->
+<div class="modal fade" id="editUserStoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>
+                    Редактировать user story
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserStoryForm">
+                    <input type="hidden" id="editUserStoryId">
+                    <div class="mb-3">
+                        <label for="editUserStoryName" class="form-label">Название user story:</label>
+                        <input type="text"
+                               class="form-control"
+                               id="editUserStoryName"
+                               required>
+                    </div>
+                    <div class="mb-3" id="businessCriticalityEditWrapper" style="display:none;">
+                        <label for="editUserStoryCriticality" class="form-label">Критичность бизнеса (1-10, опц.)</label>
+                        <input type="number"
+                               class="form-control"
+                               id="editUserStoryCriticality"
+                               min="1"
+                               max="10"
+                               placeholder="Оставьте пустым, если не задано">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveUserStoryBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно импорта user stories -->
+<div class="modal fade" id="importUserStoriesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-import me-2"></i>
+                    Импорт User Stories из файла
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="userStoriesFile" class="form-label">Выберите файл (CSV или Excel):</label>
+                    <input class="form-control" type="file" id="userStoriesFile" accept=".csv,.xlsx,.xls">
+                    <div class="form-text">
+                        Поддерживаемые форматы: CSV, Excel (.xlsx, .xls). Файл должен содержать один столбец с названиями user stories.
+                    </div>
+                </div>
+                <div id="importProgress" class="d-none">
+                    <div class="progress mb-2">
+                        <div id="importProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar" style="width: 0%">0%</div>
+                    </div>
+                    <div class="text-center">
+                        <small id="importStatus" class="text-muted">Обработка файла...</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-success" id="importUserStoriesBtn" onclick="importUserStories()">
+                    <i class="fas fa-upload me-1"></i>
+                    Импортировать
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления секции -->
+<div class="modal fade" id="deleteSectionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Подтверждение удаления секции
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Внимание!</strong> Вы собираетесь удалить секцию "<span th:text="${section.name}">Название секции</span>"
+                    со всеми вложенными в нее user stories.
+                </div>
+                <p>Это действие нельзя отменить. Все связанные user stories будут удалены без возможности восстановления.</p>
+                <div class="mb-3">
+                    <label for="confirmationText" class="form-label">
+                        Для подтверждения введите слово <strong>"удалить"</strong> в поле ниже:
+                    </label>
+                    <input type="text"
+                           class="form-control confirmation-input"
+                           id="confirmationText"
+                           placeholder="удалить"
+                           oninput="validateConfirmationText()">
+                    <div id="confirmationError" class="text-danger mt-1" style="display: none;">
+                        <i class="fas fa-times-circle me-1"></i>
+                        Неверное подтверждение
+                    </div>
+                    <div id="confirmationSuccess" class="text-success mt-1" style="display: none;">
+                        <i class="fas fa-check-circle me-1"></i>
+                        Подтверждение верное
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteSectionBtn" disabled onclick="confirmDeleteSection()">
+                    <i class="fas fa-trash me-1"></i>
+                    Подтвердить удаление
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления user story -->
+<div class="modal fade" id="deleteUserStoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Подтверждение удаления
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить user story "<span id="deleteUserStoryName"></span>"?</p>
+                <p class="text-muted">Это действие нельзя отменить.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteUserStoryBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+    // Глобальные переменные
+    let currentDeleteUserStoryId = null;
+    let currentEditUserStoryId = null;
+    let userStoriesFile = null;
+    const currentUserRole = document.body.dataset.userRole || '';
+    const isAnalystRole = currentUserRole === 'ANALYST' || currentUserRole === 'ROLE_ANALYST';
+
+    function getCriticalityBadgeClass(value) {
+        if (value >= 1 && value <= 4) return 'bg-success';
+        if (value >= 5 && value <= 7) return 'bg-warning text-dark';
+        if (value >= 8 && value <= 10) return 'bg-danger';
+        return 'bg-secondary';
+    }
+
+    // Автоматическое изменение высоты textarea
+    function autoResizeTextarea(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
+
+        // Ограничиваем максимальную высоту
+        const maxHeight = 150;
+        if (textarea.scrollHeight > maxHeight) {
+            textarea.style.height = maxHeight + 'px';
+            textarea.style.overflowY = 'auto';
+        } else {
+            textarea.style.overflowY = 'hidden';
+        }
+    }
+
+    // Загрузка user stories при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        const sectionId = document.getElementById('sectionData').dataset.sectionId;
+        console.log('Загрузка страницы, sectionId:', sectionId);
+        loadUserStories(sectionId);
+        if (isAnalystRole) {
+            document.getElementById('businessCriticalityCreateWrapper').style.display = 'block';
+            document.getElementById('businessCriticalityEditWrapper').style.display = 'block';
+        }
+
+        // Инициализация обработчика файлов
+        document.getElementById('userStoriesFile').addEventListener('change', function(e) {
+            userStoriesFile = e.target.files[0];
+        });
+
+        // Обработчик нажатия Enter в textarea
+        const textarea = document.getElementById('userStoryName');
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Предотвращаем добавление новой строки
+                createUserStory();
+            }
+            // Shift+Enter добавляет новую строку
+        });
+
+        // Авторесайз при загрузке
+        autoResizeTextarea(textarea);
+    });
+
+    // Загрузка user stories
+    function loadUserStories(sectionId) {
+        console.log('Отправка запроса к: /api/sections/' + sectionId + '/user-stories');
+        fetch(`/api/sections/${sectionId}/user-stories`)
+            .then(response => {
+                console.log('Получен ответ:', response.status);
+                return response.json();
+            })
+            .then(userStories => {
+                console.log('Получены user stories:', userStories);
+                const container = document.getElementById('userStoriesContainer');
+                const countElement = document.getElementById('userStoriesCount');
+                const emptyElement = document.getElementById('emptyUserStories');
+
+                countElement.textContent = `${userStories.length} user stories`;
+
+                if (userStories.length === 0) {
+                    emptyElement.classList.remove('d-none');
+                    container.innerHTML = '';
+                    return;
+                }
+
+                emptyElement.classList.add('d-none');
+
+                container.innerHTML = userStories.map((userStory, index) => `
+                    <div class="card user-story-card" id="user-story-card-${userStory.id}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title mb-1">
+                                        <i class="fas fa-book me-2 text-info"></i>
+                                        ${userStory.name}
+                                        ${userStory.businessCriticality ? `<span class="badge ${getCriticalityBadgeClass(userStory.businessCriticality)} ms-2">${userStory.businessCriticality}</span>` : ''}
+                                    </h5>
+                                    <small class="text-muted">
+                                        <i class="fas fa-hashtag me-1"></i>
+                                        ID: ${userStory.id} |
+                                        Создана: ${new Date(userStory.createdAt).toLocaleDateString('ru-RU')}
+                                    </small>
+                                </div>
+                                <div class="user-story-actions">
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary"
+                                                onclick="editUserStory(${userStory.id}, '${userStory.name.replace(/'/g, "\\'")}', ${userStory.businessCriticality ?? 'null'})"
+                                                title="Редактировать">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger ms-1"
+                                                onclick="deleteUserStory(${userStory.id}, '${userStory.name.replace(/'/g, "\\'")}')"
+                                                title="Удалить">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки user stories:', error);
+                showMessage('Ошибка загрузки user stories', 'danger');
+            });
+    }
+
+    // Создание user story
+    function createUserStory() {
+        const sectionId = document.getElementById('sectionData').dataset.sectionId;
+        const textarea = document.getElementById('userStoryName');
+        const userStoryName = textarea.value.trim();
+        const criticalityInput = document.getElementById('userStoryCriticality');
+        const businessCriticalityRaw = criticalityInput ? criticalityInput.value.trim() : '';
+
+        if (!userStoryName) {
+            showMessage('Название user story не может быть пустым!', 'danger');
+            textarea.focus();
+            return;
+        }
+
+        const payload = { name: userStoryName };
+        if (isAnalystRole && businessCriticalityRaw !== '') {
+            payload.businessCriticality = Number(businessCriticalityRaw);
+        }
+
+        fetch(`/api/sections/${sectionId}/user-stories`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    textarea.value = '';
+                    textarea.style.height = '38px'; // Сброс высоты
+                    if (criticalityInput) criticalityInput.value = '';
+                    textarea.focus(); // Возвращаем фокус на textarea
+                    loadUserStories(sectionId);
+                } else {
+                    showMessage(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при создании user story', 'danger');
+            });
+    }
+
+    // Открытие модального окна импорта
+    function openImportModal() {
+        const modal = new bootstrap.Modal(document.getElementById('importUserStoriesModal'));
+        modal.show();
+    }
+
+    // Импорт user stories из файла
+    function importUserStories() {
+        if (!userStoriesFile) {
+            showMessage('Пожалуйста, выберите файл для импорта', 'warning');
+            return;
+        }
+
+        const sectionId = document.getElementById('sectionData').dataset.sectionId;
+        const progressDiv = document.getElementById('importProgress');
+        const progressBar = document.getElementById('importProgressBar');
+        const statusText = document.getElementById('importStatus');
+
+        // Показать прогресс
+        progressDiv.classList.remove('d-none');
+        progressBar.style.width = '10%';
+        progressBar.textContent = '10%';
+        statusText.textContent = 'Чтение файла...';
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                // Получаем первый лист
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+
+                // Конвертируем в JSON
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                // Проверка на количество столбцов
+                if (jsonData.length > 0) {
+                    const firstRow = jsonData[0];
+                    if (Array.isArray(firstRow) && firstRow.length > 1) {
+                        throw new Error('Файл содержит более одного столбца');
+                    }
+                }
+
+                // Извлекаем user stories (первый столбец)
+                const userStories = jsonData
+                    .map(row => Array.isArray(row) ? row[0] : row)
+                    .filter(name => name && name.toString().trim() !== '')
+                    .map(name => name.toString().trim());
+
+                if (userStories.length === 0) {
+                    throw new Error('Файл не содержит данных или все строки пустые');
+                }
+
+                progressBar.style.width = '30%';
+                progressBar.textContent = '30%';
+                statusText.textContent = `Найдено ${userStories.length} user stories. Импорт...`;
+
+                // Импорт user stories
+                importUserStoriesBatch(sectionId, userStories, progressBar, statusText);
+
+            } catch (error) {
+                console.error('Ошибка обработки файла:', error);
+                showMessage(`Ошибка обработки файла: ${error.message}`, 'danger');
+                progressDiv.classList.add('d-none');
+            }
+        };
+
+        reader.onerror = function() {
+            showMessage('Ошибка чтения файла', 'danger');
+            progressDiv.classList.add('d-none');
+        };
+
+        // Чтение файла как массив байтов
+        reader.readAsArrayBuffer(userStoriesFile);
+    }
+
+    // Пакетный импорт user stories
+    function importUserStoriesBatch(sectionId, userStories, progressBar, statusText) {
+        let imported = 0;
+        const total = userStories.length;
+        const batchSize = 10; // Размер пакета для отправки на сервер
+
+        function importNextBatch(startIndex) {
+            const endIndex = Math.min(startIndex + batchSize, total);
+            const batch = userStories.slice(startIndex, endIndex);
+
+            fetch(`/api/sections/${sectionId}/user-stories/import`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userStories: batch })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        imported += batch.length;
+                        const progressPercent = Math.round((imported / total) * 100);
+                        progressBar.style.width = `${30 + (progressPercent * 0.7)}%`;
+                        progressBar.textContent = `${progressPercent}%`;
+                        statusText.textContent = `Импортировано ${imported} из ${total}...`;
+
+                        if (endIndex < total) {
+                            // Импорт следующего пакета
+                            setTimeout(() => importNextBatch(endIndex), 100);
+                        } else {
+                            // Импорт завершен
+                            setTimeout(() => {
+                                showMessage(`Успешно импортировано ${imported} user stories из файла`, 'success');
+                                bootstrap.Modal.getInstance(document.getElementById('importUserStoriesModal')).hide();
+
+                                // Очистка формы
+                                document.getElementById('userStoriesFile').value = '';
+                                userStoriesFile = null;
+                                document.getElementById('importProgress').classList.add('d-none');
+
+                                // Обновление списка
+                                loadUserStories(sectionId);
+                            }, 500);
+                        }
+                    } else {
+                        throw new Error(data.message || 'Ошибка при импорте user stories');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка импорта:', error);
+                    showMessage(`Ошибка импорта: ${error.message}`, 'danger');
+                    document.getElementById('importProgress').classList.add('d-none');
+                });
+        }
+
+        // Начинаем импорт с первого пакета
+        importNextBatch(0);
+    }
+
+    // Редактирование user story
+    function editUserStory(id, name, businessCriticality) {
+        currentEditUserStoryId = id;
+        document.getElementById('editUserStoryId').value = id;
+        document.getElementById('editUserStoryName').value = name;
+        const criticalityInput = document.getElementById('editUserStoryCriticality');
+        if (criticalityInput) {
+            criticalityInput.value = businessCriticality ?? '';
+        }
+
+        const modal = new bootstrap.Modal(document.getElementById('editUserStoryModal'));
+        modal.show();
+    }
+
+    // Сохранение изменений user story
+    document.getElementById('saveUserStoryBtn').addEventListener('click', function() {
+        const userStoryId = document.getElementById('editUserStoryId').value;
+        const newName = document.getElementById('editUserStoryName').value.trim();
+        const criticalityInput = document.getElementById('editUserStoryCriticality');
+        const businessCriticalityRaw = criticalityInput ? criticalityInput.value.trim() : '';
+        const sectionId = document.getElementById('sectionData').dataset.sectionId;
+
+        if (!newName) {
+            showMessage('Название user story не может быть пустым!', 'danger');
+            return;
+        }
+
+        const payload = { name: newName };
+        if (isAnalystRole) {
+            payload.businessCriticality = businessCriticalityRaw === '' ? null : Number(businessCriticalityRaw);
+        }
+
+        fetch(`/api/user-stories/${userStoryId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('editUserStoryModal')).hide();
+                    loadUserStories(sectionId);
+                } else {
+                    showMessage(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при обновлении user story', 'danger');
+            });
+    });
+
+    // Удаление user story
+    function deleteUserStory(id, name) {
+        currentDeleteUserStoryId = id;
+        document.getElementById('deleteUserStoryName').textContent = name;
+
+        const modal = new bootstrap.Modal(document.getElementById('deleteUserStoryModal'));
+        modal.show();
+    }
+
+    // Подтверждение удаления user story
+    document.getElementById('confirmDeleteUserStoryBtn').addEventListener('click', function() {
+        if (currentDeleteUserStoryId) {
+            const sectionId = document.getElementById('sectionData').dataset.sectionId;
+            fetch(`/api/user-stories/${currentDeleteUserStoryId}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        bootstrap.Modal.getInstance(document.getElementById('deleteUserStoryModal')).hide();
+                        loadUserStories(sectionId);
+                    } else {
+                        showMessage(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    showMessage('Ошибка при удалении user story', 'danger');
+                });
+        }
+    });
+
+    // Редактирование секции
+    function editSection() {
+        const modal = new bootstrap.Modal(document.getElementById('editSectionModal'));
+        modal.show();
+    }
+
+    // Сохранение изменений секции
+    document.getElementById('saveSectionBtn').addEventListener('click', function() {
+        const newName = document.getElementById('editSectionName').value.trim();
+        const sectionId = document.getElementById('sectionData').dataset.sectionId;
+
+        if (!newName) {
+            alert('Название секции не может быть пустым!');
+            return;
+        }
+
+        fetch(`/api/sections/${sectionId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: newName })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Обновляем название на странице
+                    document.querySelector('h1 span').textContent = newName;
+                    document.querySelector('.card-body .fs-5').textContent = newName;
+                    document.getElementById('editSectionName').value = newName;
+
+                    // Закрываем модальное окно
+                    bootstrap.Modal.getInstance(document.getElementById('editSectionModal')).hide();
+
+                    // Показываем сообщение об успехе
+                    showMessage('Секция успешно обновлена!', 'success');
+
+                    // Перезагружаем страницу для обновления даты
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showMessage(data.message || 'Ошибка при обновлении секции', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при обновлении секции', 'danger');
+            });
+    });
+
+    // Открытие модального окна удаления секции
+    function openDeleteSectionModal() {
+        const modal = new bootstrap.Modal(document.getElementById('deleteSectionModal'));
+        modal.show();
+    }
+
+    // Валидация текста подтверждения
+    function validateConfirmationText() {
+        const input = document.getElementById('confirmationText');
+        const errorDiv = document.getElementById('confirmationError');
+        const successDiv = document.getElementById('confirmationSuccess');
+        const confirmBtn = document.getElementById('confirmDeleteSectionBtn');
+
+        const text = input.value.trim().toLowerCase();
+
+        if (text === 'удалить') {
+            input.classList.remove('invalid');
+            input.classList.add('valid');
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'block';
+            confirmBtn.disabled = false;
+        } else {
+            input.classList.remove('valid');
+            input.classList.add('invalid');
+            errorDiv.style.display = 'block';
+            successDiv.style.display = 'none';
+            confirmBtn.disabled = true;
+        }
+    }
+
+    // Подтверждение удаления секции
+    function confirmDeleteSection() {
+        const sectionId = document.getElementById('sectionData').dataset.sectionId;
+        const projectId = document.getElementById('sectionData').dataset.projectId;
+        const sectionName = document.querySelector('h1 span').textContent;
+
+        fetch(`/api/sections/${sectionId}/delete-with-user-stories`, {
+            method: 'DELETE'
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Показываем сообщение об успехе на странице проекта
+                    localStorage.setItem('showSectionDeletedMessage', 'true');
+                    localStorage.setItem('deletedSectionName', sectionName);
+
+                    // Переходим к странице проекта
+                    window.location.href = `/projects/${projectId}`;
+                } else {
+                    showMessage(data.message || 'Ошибка при удалении секции', 'danger');
+                    bootstrap.Modal.getInstance(document.getElementById('deleteSectionModal')).hide();
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при удалении секции', 'danger');
+            });
+    }
+
+    // Функция для отображения сообщений
+    function showMessage(message, type) {
+        // Создаем временный alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style = 'top: 20px; right: 20px; z-index: 10000; min-width: 300px;';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        document.body.appendChild(alertDiv);
+
+        // Автоматическое удаление через 5 секунд
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+</script>
+</body>
+</html>

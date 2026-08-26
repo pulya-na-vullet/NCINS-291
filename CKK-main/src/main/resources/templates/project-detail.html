@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${project.name} + ' - Детали проекта'">Детали проекта</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .project-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .info-card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            overflow: hidden;
+        }
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .section-card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            overflow: hidden;
+        }
+        .section-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        .section-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+            background: linear-gradient(135deg, #23923d 0%, #1baa87 100%);
+        }
+        .btn-white {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+            color: #495057;
+        }
+        .btn-white:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .btn-outline-danger {
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 1.5rem 2rem;
+        }
+        .modal-header .btn-close {
+            filter: invert(1);
+        }
+        .form-control {
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+            transform: translateY(-1px);
+        }
+        .section-link {
+            text-decoration: none;
+            color: inherit;
+        }
+        .section-link:hover {
+            text-decoration: none;
+        }
+        .section-actions {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .section-card:hover .section-actions {
+            opacity: 1;
+        }
+        .tag-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #000000;
+            font-weight: 500;
+        }
+        .tag-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .tag-actions {
+            margin-left: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .tag-badge:hover .tag-actions {
+            opacity: 1;
+        }
+        .tag-input-group {
+            max-width: 300px;
+        }
+        .qa-tool-btn {
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .qa-tool-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .card-title a {
+            color: #2c3e50;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .card-title a:hover {
+            color: #667eea;
+        }
+        .text-muted {
+            color: #6c757d !important;
+        }
+        .badge {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .bg-success { background: linear-gradient(135deg, #28a745, #20c997) !important; }
+        .bg-warning { background: linear-gradient(135deg, #ffc107, #fd7e14) !important; }
+        .bg-info { background: linear-gradient(135deg, #17a2b8, #6f42c1) !important; }
+        .bg-secondary { background: linear-gradient(135deg, #6c757d, #495057) !important; }
+        .back-button {
+            transition: all 0.3s ease;
+        }
+        .back-button:hover {
+            transform: translateX(-5px);
+        }
+        .confirmation-input {
+            border: 2px solid #dc3545;
+            transition: all 0.3s ease;
+        }
+        .confirmation-input.valid {
+            border-color: #198754;
+        }
+        .confirmation-input.invalid {
+            border-color: #dc3545;
+        }
+        .sections-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .sections-actions .form-control {
+            flex: 1;
+        }
+        @media (max-width: 768px) {
+            .sections-actions {
+                flex-direction: column;
+            }
+            .sections-actions .form-control {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+        .delete-loading {
+            display: none;
+            color: #dc3545;
+            font-weight: 500;
+        }
+        .delete-loading i {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <!-- Навигация -->
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <a href="/" class="btn btn-white back-button">
+                    <i class="fas fa-arrow-left me-2"></i>Назад к списку проектов
+                </a>
+            </div>
+            <form action="/logout" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-sign-out-alt me-1"></i> Выйти
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Заголовок проекта -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="project-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="mb-2">
+                            <i class="fas fa-project-diagram me-3"></i>
+                            <span th:text="${project.name}">Название проекта</span>
+                        </h1>
+                        <p class="mb-0 opacity-75">
+                            <i class="fas fa-hashtag me-2"></i>
+                            ID: <span th:text="${project.id}">1</span>
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <div class="badge bg-light text-dark fs-6 p-3">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            Создан: <span th:text="${#temporals.format(project.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2024 12:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основная информация -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card info-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Основная информация
+                    </h5>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold">Название проекта:</label>
+                            <p class="mb-0 fs-5" th:text="${project.name}">Название проекта</p>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold">ID проекта:</label>
+                            <p class="mb-0" th:text="${project.id}">1</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card info-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-success">
+                        <i class="fas fa-clock me-2"></i>
+                        Даты
+                    </h5>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold">Дата создания:</label>
+                            <p class="mb-0" th:text="${#temporals.format(project.createdAt, 'dd.MM.yyyy HH:mm:ss')}">01.01.2024 12:00:00</p>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold">Дата последнего обновления:</label>
+                            <p class="mb-0" th:text="${#temporals.format(project.updatedAt, 'dd.MM.yyyy HH:mm:ss')}">01.01.2024 12:00:00</p>
+                        </div>
+                        <div class="col-12" th:if="${project.createdAt != project.updatedAt}">
+                            <small class="text-muted">
+                                <i class="fas fa-sync-alt me-1"></i>
+                                Проект был обновлен
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QA Инструменты -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card info-card">
+                <div class="card-body">
+                    <h5 class="card-title text-success d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fas fa-tools me-2"></i>
+                            QA Инструменты проекта
+                        </span>
+                        <span class="badge bg-success" id="qaToolsCount">1 инструмент</span>
+                    </h5>
+                    <hr>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="/project/{{ project.id }}/traceability-matrix" class="btn btn-outline-success qa-tool-btn">
+                            <i class="fas fa-table me-2"></i>
+                            Матрица покрытия
+                        </a>
+                        <a href="/project-qa/{{ project.id }}" class="btn btn-outline-primary qa-tool-btn">
+                            <i class="fas fa-vial me-2"></i>
+                            Тест-кейсы
+                        </a>
+                        <a href="/project-qa/{{ project.id }}/test-runs" class="btn btn-outline-info qa-tool-btn">
+                            <i class="fas fa-play-circle me-2"></i>
+                            Тест-раны
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Теги проекта -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card info-card">
+                <div class="card-body">
+                    <h5 class="card-title text-warning d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fas fa-tags me-2"></i>
+                            Теги проекта
+                        </span>
+                        <span class="badge bg-warning" id="tagsCount">0 тегов</span>
+                    </h5>
+                    <hr>
+
+                    <!-- Форма создания тега -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <form id="createTagForm" class="d-flex flex-wrap gap-3 align-items-end">
+                                <div class="tag-input-group">
+                                    <label for="tagName" class="form-label fw-bold">Название тега:</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="tagName"
+                                           placeholder="Введите название тега..."
+                                           autocomplete="off"
+                                           required>
+                                </div>
+                                <div class="tag-input-group">
+                                    <label for="tagColor" class="form-label fw-bold">Цвет:</label>
+                                    <input type="color"
+                                           class="form-control form-control-color"
+                                           id="tagColor"
+                                           value="#6c757d"
+                                           title="Выберите цвет">
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>
+                                    Добавить тег
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Список тегов -->
+                    <div id="tagsList">
+                        <div id="emptyTags" class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Теги не найдены</h5>
+                            <p class="text-muted">Создайте первый тег с помощью формы выше</p>
+                        </div>
+                        <div id="tagsContainer" class="d-flex flex-wrap"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Секции проекта -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card info-card">
+                <div class="card-body">
+                    <h5 class="card-title text-info d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fas fa-layer-group me-2"></i>
+                            Секции проекта
+                        </span>
+                        <span class="badge bg-info" id="sectionsCount">0 секций</span>
+                    </h5>
+                    <hr>
+
+                    <!-- Форма создания и импорта секций -->
+                    <div class="sections-actions">
+                        <input type="text"
+                               class="form-control"
+                               id="sectionName"
+                               placeholder="Введите название секции..."
+                               autocomplete="off"
+                               required>
+                        <button type="button" class="btn btn-primary" onclick="createSection()">
+                            <i class="fas fa-plus me-2"></i>
+                            Добавить секцию
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="openImportSectionsModal()">
+                            <i class="fas fa-file-import me-2"></i>
+                            Импорт секций
+                        </button>
+                    </div>
+
+                    <!-- Список секций -->
+                    <div id="sectionsList">
+                        <div id="emptySections" class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Секции не найдены</h5>
+                            <p class="text-muted">Создайте первую секцию или импортируйте из файла</p>
+                        </div>
+                        <div id="sectionsContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Действия с проектом -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card info-card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-cogs me-2"></i>
+                        Действия с проектом
+                    </h5>
+                    <hr>
+                    <div class="d-flex flex-wrap gap-3">
+                        <button class="btn btn-outline-primary" onclick="editProject()">
+                            <i class="fas fa-edit me-2"></i>
+                            Редактировать проект
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="deleteProject()">
+                            <i class="fas fa-trash me-2"></i>
+                            Удалить проект
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Скрытое поле для передачи projectId -->
+<div id="projectData" data-project-id="{{ project.id }}" style="display: none;"></div>
+
+<!-- Модальные окна -->
+<div class="modal fade" id="editProjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>
+                    Редактировать проект
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProjectForm">
+                    <div class="mb-3">
+                        <label for="editProjectName" class="form-label fw-bold">Название проекта:</label>
+                        <input type="text"
+                               class="form-control"
+                               id="editProjectName"
+                               th:value="${project.name}"
+                               required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveProjectBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editTagModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>
+                    Редактировать тег
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editTagForm">
+                    <input type="hidden" id="editTagId">
+                    <div class="mb-3">
+                        <label for="editTagName" class="form-label fw-bold">Название тега:</label>
+                        <input type="text"
+                               class="form-control"
+                               id="editTagName"
+                               required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTagColor" class="form-label fw-bold">Цвет:</label>
+                        <input type="color"
+                               class="form-control form-control-color"
+                               id="editTagColor"
+                               title="Выберите цвет">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveTagBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editSectionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>
+                    Редактировать секцию
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editSectionForm">
+                    <input type="hidden" id="editSectionId">
+                    <div class="mb-3">
+                        <label for="editSectionName" class="form-label fw-bold">Название секции:</label>
+                        <input type="text"
+                               class="form-control"
+                               id="editSectionName"
+                               required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveSectionBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно импорта секций -->
+<div class="modal fade" id="importSectionsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-import me-2"></i>
+                    Импорт секций из файла
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="sectionsFile" class="form-label fw-bold">Выберите файл (CSV или Excel):</label>
+                    <input class="form-control" type="file" id="sectionsFile" accept=".csv,.xlsx,.xls">
+                    <div class="form-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Поддерживаемые форматы: CSV, Excel (.xlsx, .xls).<br>
+                        Файл должен содержать 2 столбца:<br>
+                        1-й столбец: Название секции<br>
+                        2-й столбец: Название user story
+                    </div>
+                </div>
+                <div id="importProgress" class="d-none">
+                    <div class="progress mb-2">
+                        <div id="importProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar" style="width: 0%">0%</div>
+                    </div>
+                    <div class="text-center">
+                        <small id="importStatus" class="text-muted">Обработка файла...</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-success" id="importSectionsBtn" onclick="importSections()">
+                    <i class="fas fa-upload me-1"></i>
+                    Импортировать
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления секции -->
+<div class="modal fade" id="deleteSectionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Подтверждение удаления секции
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Внимание! Критическое действие!</strong>
+                </div>
+
+                <div class="alert alert-warning">
+                    <i class="fas fa-database me-2"></i>
+                    <strong>Будут удалены:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Секция "<span id="deleteSectionName"></span>"</li>
+                        <li>Все связанные User Stories</li>
+                        <li>Все связи с тест-кейсами</li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Это действие приведет к полному удалению всех связанных данных без возможности восстановления.
+                </div>
+
+                <div class="mb-3">
+                    <label for="confirmationText" class="form-label fw-bold">
+                        Для подтверждения введите слово <span class="text-danger">"удалить"</span> в поле ниже:
+                    </label>
+                    <input type="text"
+                           class="form-control confirmation-input"
+                           id="confirmationText"
+                           placeholder="удалить"
+                           oninput="validateConfirmationText()">
+                    <div id="confirmationError" class="text-danger mt-1" style="display: none;">
+                        <i class="fas fa-times-circle me-1"></i>
+                        Неверное подтверждение. Введите слово "удалить" точно как указано.
+                    </div>
+                    <div id="confirmationSuccess" class="text-success mt-1" style="display: none;">
+                        <i class="fas fa-check-circle me-1"></i>
+                        Подтверждение верное. Можно удалять.
+                    </div>
+                </div>
+
+                <div class="text-muted small">
+                    <i class="fas fa-clock me-1"></i>
+                    Удаление может занять несколько секунд из-за большого количества связанных данных.
+                </div>
+
+                <div class="delete-loading mt-3 text-center" id="deleteSectionLoading">
+                    <i class="fas fa-spinner me-2"></i>
+                    Идет удаление секции и всех связанных данных...
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelDeleteSectionBtn" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    Отмена
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteSectionBtn" disabled onclick="confirmDeleteSection()">
+                    <i class="fas fa-trash-alt me-1"></i>
+                    Подтвердить удаление
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteProjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Подтверждение удаления
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить проект "<span th:text="${project.name}"></span>"?</p>
+                <p class="text-muted">Это действие нельзя отменить.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteProjectBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteTagModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Подтверждение удаления
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить тег "<span id="deleteTagName"></span>"?</p>
+                <p class="text-muted">Это действие нельзя отменить.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteTagBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+    // Глобальные переменные
+    let currentDeleteSectionId = null;
+    let currentEditSectionId = null;
+    let currentDeleteTagId = null;
+    let currentEditTagId = null;
+    let availableTags = [];
+    let sectionsFile = null;
+    let isDeletingSection = false;
+
+    // Функция для определения контрастного цвета текста
+    function getContrastTextColor(hexColor) {
+        hexColor = hexColor.replace('#', '');
+        if (hexColor.length === 3) {
+            hexColor = hexColor.split('').map(char => char + char).join('');
+        }
+        const r = parseInt(hexColor.substr(0, 2), 16);
+        const g = parseInt(hexColor.substr(2, 2), 16);
+        const b = parseInt(hexColor.substr(4, 2), 16);
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.5 ? '#000000' : '#FFFFFF';
+    }
+
+    // Загрузка страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        const projectId = document.getElementById('projectData').dataset.projectId;
+        console.log('Загрузка страницы проекта, projectId:', projectId);
+        loadSections(projectId);
+        loadTags(projectId);
+
+        // Инициализация обработчиков событий
+        document.getElementById('createTagForm').addEventListener('submit', createTag);
+        document.getElementById('sectionName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                createSection();
+            }
+        });
+        document.getElementById('saveProjectBtn').addEventListener('click', saveProject);
+        document.getElementById('saveTagBtn').addEventListener('click', saveTag);
+        document.getElementById('saveSectionBtn').addEventListener('click', saveSection);
+        document.getElementById('confirmDeleteProjectBtn').addEventListener('click', confirmDeleteProject);
+        document.getElementById('confirmDeleteTagBtn').addEventListener('click', confirmDeleteTag);
+
+        // Инициализация обработчика файлов
+        document.getElementById('sectionsFile').addEventListener('change', function(e) {
+            sectionsFile = e.target.files[0];
+        });
+
+        // Обработчик закрытия модального окна удаления секции
+        document.getElementById('cancelDeleteSectionBtn').addEventListener('click', function() {
+            isDeletingSection = false;
+            document.getElementById('deleteSectionLoading').style.display = 'none';
+        });
+    });
+
+    // Открытие модального окна импорта секций
+    function openImportSectionsModal() {
+        const modal = new bootstrap.Modal(document.getElementById('importSectionsModal'));
+        modal.show();
+    }
+
+    // Импорт секций из файла
+    function importSections() {
+        if (!sectionsFile) {
+            showMessage('Пожалуйста, выберите файл для импорта', 'warning');
+            return;
+        }
+
+        const projectId = document.getElementById('projectData').dataset.projectId;
+        const progressDiv = document.getElementById('importProgress');
+        const progressBar = document.getElementById('importProgressBar');
+        const statusText = document.getElementById('importStatus');
+
+        // Показать прогресс
+        progressDiv.classList.remove('d-none');
+        progressBar.style.width = '10%';
+        progressBar.textContent = '10%';
+        statusText.textContent = 'Чтение файла...';
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                // Получаем первый лист
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+
+                // Конвертируем в JSON
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                // Проверка на количество столбцов
+                if (jsonData.length > 0) {
+                    const firstRow = jsonData[0];
+                    if (!Array.isArray(firstRow) || firstRow.length !== 2) {
+                        throw new Error('Файл должен содержать ровно 2 столбца. В файле найдено: ' +
+                            (Array.isArray(firstRow) ? firstRow.length : 'не определено') +
+                            ' столбцов. Формат: 1-й столбец - секция, 2-й столбец - user story');
+                    }
+                }
+
+                // Извлекаем данные
+                const importData = jsonData
+                    .map(row => Array.isArray(row) ? row : [])
+                    .filter(row => row.length === 2 && row[0] && row[1])
+                    .map(row => ({
+                        sectionName: row[0].toString().trim(),
+                        userStoryName: row[1].toString().trim()
+                    }));
+
+                if (importData.length === 0) {
+                    throw new Error('Файл не содержит данных или все строки пустые/неполные');
+                }
+
+                progressBar.style.width = '30%';
+                progressBar.textContent = '30%';
+                statusText.textContent = `Найдено ${importData.length} записей. Импорт...`;
+
+                // Импорт данных
+                importSectionsBatch(projectId, importData, progressBar, statusText);
+
+            } catch (error) {
+                console.error('Ошибка обработки файла:', error);
+                showMessage(`Ошибка обработки файла: ${error.message}`, 'danger');
+                progressDiv.classList.add('d-none');
+            }
+        };
+
+        reader.onerror = function() {
+            showMessage('Ошибка чтения файла', 'danger');
+            progressDiv.classList.add('d-none');
+        };
+
+        // Чтение файла как массив байтов
+        reader.readAsArrayBuffer(sectionsFile);
+    }
+
+    // Пакетный импорт секций и user stories
+    function importSectionsBatch(projectId, importData, progressBar, statusText) {
+        let importedSections = 0;
+        let importedUserStories = 0;
+        const total = importData.length;
+        const batchSize = 10; // Размер пакета для отправки на сервер
+
+        function importNextBatch(startIndex) {
+            const endIndex = Math.min(startIndex + batchSize, total);
+            const batch = importData.slice(startIndex, endIndex);
+
+            fetch(`/api/projects/${projectId}/sections/import`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ importData: batch })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        importedSections += data.importedSections || 0;
+                        importedUserStories += data.importedUserStories || 0;
+                        const progressPercent = Math.round(((importedSections + importedUserStories) / (total * 2)) * 100);
+                        progressBar.style.width = `${30 + (progressPercent * 0.7)}%`;
+                        progressBar.textContent = `${progressPercent}%`;
+                        statusText.textContent = `Импортировано ${importedSections} секций и ${importedUserStories} user stories...`;
+
+                        if (endIndex < total) {
+                            // Импорт следующего пакета
+                            setTimeout(() => importNextBatch(endIndex), 100);
+                        } else {
+                            // Импорт завершен
+                            setTimeout(() => {
+                                showMessage(`Успешно импортировано ${importedSections} секций и ${importedUserStories} user stories из файла`, 'success');
+                                bootstrap.Modal.getInstance(document.getElementById('importSectionsModal')).hide();
+
+                                // Очистка формы
+                                document.getElementById('sectionsFile').value = '';
+                                sectionsFile = null;
+                                document.getElementById('importProgress').classList.add('d-none');
+
+                                // Обновление списка
+                                loadSections(projectId);
+                            }, 500);
+                        }
+                    } else {
+                        throw new Error(data.message || 'Ошибка при импорте данных');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка импорта:', error);
+                    showMessage(`Ошибка импорта: ${error.message}`, 'danger');
+                    document.getElementById('importProgress').classList.add('d-none');
+                });
+        }
+
+        // Начинаем импорт с первого пакета
+        importNextBatch(0);
+    }
+
+    // Валидация текста подтверждения
+    function validateConfirmationText() {
+        if (isDeletingSection) return;
+
+        const input = document.getElementById('confirmationText');
+        const errorDiv = document.getElementById('confirmationError');
+        const successDiv = document.getElementById('confirmationSuccess');
+        const confirmBtn = document.getElementById('confirmDeleteSectionBtn');
+
+        const text = input.value.trim().toLowerCase();
+
+        if (text === 'удалить') {
+            input.classList.remove('invalid');
+            input.classList.add('valid');
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'block';
+            confirmBtn.disabled = false;
+        } else {
+            input.classList.remove('valid');
+            input.classList.add('invalid');
+            errorDiv.style.display = 'block';
+            successDiv.style.display = 'none';
+            confirmBtn.disabled = true;
+        }
+    }
+
+    // Загрузка тегов
+    function loadTags(projectId) {
+        fetch(`/api/projects/${projectId}/tags`)
+            .then(response => response.json())
+            .then(tags => {
+                availableTags = tags;
+                const container = document.getElementById('tagsContainer');
+                const countElement = document.getElementById('tagsCount');
+                const emptyElement = document.getElementById('emptyTags');
+
+                countElement.textContent = `${tags.length} тегов`;
+
+                if (tags.length === 0) {
+                    emptyElement.style.display = 'block';
+                    container.innerHTML = '';
+                    return;
+                }
+
+                emptyElement.style.display = 'none';
+                container.innerHTML = tags.map(tag => {
+                    const textColor = getContrastTextColor(tag.color);
+                    return `
+                    <div class="tag-badge"
+                         style="background-color: ${tag.color}; color: ${textColor};"
+                         id="tag-${tag.id}">
+                        <span>${tag.name}</span>
+                        <div class="tag-actions">
+                            <button class="btn btn-sm btn-light ms-2"
+                                    onclick="event.stopPropagation(); editTag(${tag.id}, '${tag.name}', '${tag.color}')"
+                                    title="Редактировать">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger ms-1"
+                                    onclick="event.stopPropagation(); deleteTag(${tag.id}, '${tag.name}')"
+                                    title="Удалить">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `}).join('');
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки тегов:', error);
+                showMessage('Ошибка загрузки тегов', 'danger');
+            });
+    }
+
+    // Создание тега
+    function createTag(e) {
+        e.preventDefault();
+        const projectId = document.getElementById('projectData').dataset.projectId;
+        const tagName = document.getElementById('tagName').value.trim();
+        const tagColor = document.getElementById('tagColor').value;
+
+        if (!tagName) {
+            showMessage('Название тега не может быть пустым!', 'danger');
+            return;
+        }
+
+        fetch(`/api/projects/${projectId}/tags`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: tagName,
+                color: tagColor
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    document.getElementById('tagName').value = '';
+                    loadTags(projectId);
+                } else {
+                    showMessage(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при создании тега', 'danger');
+            });
+    }
+
+    // Редактирование тега
+    function editTag(id, name, color) {
+        currentEditTagId = id;
+        document.getElementById('editTagId').value = id;
+        document.getElementById('editTagName').value = name;
+        document.getElementById('editTagColor').value = color;
+        const modal = new bootstrap.Modal(document.getElementById('editTagModal'));
+        modal.show();
+    }
+
+    // Сохранение изменений тега
+    function saveTag() {
+        const tagId = document.getElementById('editTagId').value;
+        const newName = document.getElementById('editTagName').value.trim();
+        const newColor = document.getElementById('editTagColor').value;
+        const projectId = document.getElementById('projectData').dataset.projectId;
+
+        if (!newName) {
+            showMessage('Название тега не может быть пустым!', 'danger');
+            return;
+        }
+
+        fetch(`/api/tags/${tagId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: newName,
+                color: newColor
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('editTagModal')).hide();
+                    loadTags(projectId);
+                } else {
+                    showMessage(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при обновлении тега', 'danger');
+            });
+    }
+
+    // Удаление тега
+    function deleteTag(id, name) {
+        currentDeleteTagId = id;
+        document.getElementById('deleteTagName').textContent = name;
+        const modal = new bootstrap.Modal(document.getElementById('deleteTagModal'));
+        modal.show();
+    }
+
+    // Подтверждение удаления тега
+    function confirmDeleteTag() {
+        if (currentDeleteTagId) {
+            const projectId = document.getElementById('projectData').dataset.projectId;
+            fetch(`/api/tags/${currentDeleteTagId}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        bootstrap.Modal.getInstance(document.getElementById('deleteTagModal')).hide();
+                        loadTags(projectId);
+                    } else {
+                        showMessage(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    showMessage('Ошибка при удалении тега', 'danger');
+                });
+        }
+    }
+
+    // Загрузка секций
+    function loadSections(projectId) {
+        fetch(`/api/projects/${projectId}/sections`)
+            .then(response => response.json())
+            .then(sections => {
+                const container = document.getElementById('sectionsContainer');
+                const countElement = document.getElementById('sectionsCount');
+                const emptyElement = document.getElementById('emptySections');
+
+                countElement.textContent = `${sections.length} секций`;
+
+                if (sections.length === 0) {
+                    emptyElement.style.display = 'block';
+                    container.innerHTML = '';
+                    return;
+                }
+
+                emptyElement.style.display = 'none';
+                container.innerHTML = sections.map(section => `
+                    <div class="card section-card"
+                         id="section-card-${section.id}">
+                        <a href="/sections/${section.id}" class="section-link">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="card-title mb-1">
+                                            <i class="fas fa-layer-group me-2 text-info"></i>
+                                            <span>${section.name}</span>
+                                        </h5>
+                                        <small class="text-muted">
+                                            <i class="fas fa-hashtag me-1"></i>
+                                            ID: ${section.id} |
+                                            Создана: ${new Date(section.createdAt).toLocaleDateString('ru-RU')}
+                                        </small>
+                                    </div>
+                                    <div class="section-actions">
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary"
+                                                    onclick="event.preventDefault(); editSection(${section.id}, '${section.name.replace(/'/g, "\\'")}')"
+                                                    title="Редактировать">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger ms-1"
+                                                    onclick="event.preventDefault(); deleteSectionWithConfirmation(${section.id}, '${section.name.replace(/'/g, "\\'")}')"
+                                                    title="Удалить">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                `).join('');
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки секций:', error);
+                showMessage('Ошибка загрузки секций', 'danger');
+            });
+    }
+
+    // Создание секции
+    function createSection() {
+        const projectId = document.getElementById('projectData').dataset.projectId;
+        const sectionNameInput = document.getElementById('sectionName');
+        const sectionName = sectionNameInput.value.trim();
+
+        if (!sectionName) {
+            showMessage('Название секции не может быть пустым!', 'danger');
+            sectionNameInput.focus();
+            return;
+        }
+
+        fetch(`/api/projects/${projectId}/sections`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: sectionName })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    sectionNameInput.value = '';
+                    sectionNameInput.focus();
+                    loadSections(projectId);
+                } else {
+                    showMessage(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при создании секции', 'danger');
+            });
+    }
+
+    // Редактирование секции
+    function editSection(id, name) {
+        currentEditSectionId = id;
+        document.getElementById('editSectionId').value = id;
+        document.getElementById('editSectionName').value = name;
+        const modal = new bootstrap.Modal(document.getElementById('editSectionModal'));
+        modal.show();
+    }
+
+    // Сохранение изменений секции
+    function saveSection() {
+        const sectionId = document.getElementById('editSectionId').value;
+        const newName = document.getElementById('editSectionName').value.trim();
+        const projectId = document.getElementById('projectData').dataset.projectId;
+
+        if (!newName) {
+            showMessage('Название секции не может быть пустым!', 'danger');
+            return;
+        }
+
+        fetch(`/api/sections/${sectionId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: newName })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('editSectionModal')).hide();
+                    loadSections(projectId);
+                } else {
+                    showMessage(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при обновлении секции', 'danger');
+            });
+    }
+
+    // Удаление секции с подтверждением
+    function deleteSectionWithConfirmation(id, name) {
+        currentDeleteSectionId = id;
+        document.getElementById('deleteSectionName').textContent = name;
+
+        // Сброс формы подтверждения
+        document.getElementById('confirmationText').value = '';
+        document.getElementById('confirmationText').classList.remove('valid', 'invalid');
+        document.getElementById('confirmationError').style.display = 'none';
+        document.getElementById('confirmationSuccess').style.display = 'none';
+        document.getElementById('confirmDeleteSectionBtn').disabled = true;
+        document.getElementById('deleteSectionLoading').style.display = 'none';
+        isDeletingSection = false;
+
+        const modal = new bootstrap.Modal(document.getElementById('deleteSectionModal'));
+        modal.show();
+    }
+
+    // Подтверждение удаления секции
+    function confirmDeleteSection() {
+        if (isDeletingSection || !currentDeleteSectionId) return;
+
+        isDeletingSection = true;
+
+        const projectId = document.getElementById('projectData').dataset.projectId;
+        const confirmBtn = document.getElementById('confirmDeleteSectionBtn');
+        const cancelBtn = document.getElementById('cancelDeleteSectionBtn');
+        const loadingDiv = document.getElementById('deleteSectionLoading');
+
+        // Показать индикатор загрузки
+        confirmBtn.disabled = true;
+        cancelBtn.disabled = true;
+        loadingDiv.style.display = 'block';
+
+        fetch(`/api/sections/${currentDeleteSectionId}/delete-with-user-stories`, {
+            method: 'DELETE'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('deleteSectionModal')).hide();
+
+                    // Сброс состояния
+                    isDeletingSection = false;
+                    confirmBtn.disabled = false;
+                    cancelBtn.disabled = false;
+                    loadingDiv.style.display = 'none';
+
+                    // Небольшая задержка перед обновлением списка
+                    setTimeout(() => {
+                        loadSections(projectId);
+                    }, 1000);
+                } else {
+                    showMessage(data.message || 'Произошла ошибка при удалении секции', 'danger');
+
+                    // Сброс состояния
+                    isDeletingSection = false;
+                    confirmBtn.disabled = false;
+                    cancelBtn.disabled = false;
+                    loadingDiv.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка удаления секции:', error);
+
+                // Проверяем, не связана ли ошибка с блокировкой транзакции
+                let errorMessage = 'Ошибка при удалении секции. ';
+                if (error.message.includes('transaction') || error.message.includes('lock') || error.message.includes('409')) {
+                    errorMessage += 'Возможно, данные используются в другом месте. Пожалуйста, подождите и попробуйте еще раз.';
+                } else if (error.message.includes('500')) {
+                    errorMessage += 'Внутренняя ошибка сервера. Пожалуйста, обратитесь к администратору.';
+                } else {
+                    errorMessage += 'Пожалуйста, попробуйте еще раз.';
+                }
+
+                showMessage(errorMessage, 'danger');
+
+                // Сброс состояния
+                isDeletingSection = false;
+                confirmBtn.disabled = false;
+                cancelBtn.disabled = false;
+                loadingDiv.style.display = 'none';
+
+                // Не закрываем модальное окно, чтобы пользователь мог попробовать снова
+            });
+    }
+
+    // Редактирование проекта
+    function editProject() {
+        const modal = new bootstrap.Modal(document.getElementById('editProjectModal'));
+        modal.show();
+    }
+
+    // Сохранение изменений проекта
+    function saveProject() {
+        const newName = document.getElementById('editProjectName').value.trim();
+        const projectId = document.getElementById('projectData').dataset.projectId;
+
+        if (!newName) {
+            showMessage('Название проекта не может быть пустым!', 'danger');
+            return;
+        }
+
+        fetch(`/api/projects/${projectId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: newName })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.querySelector('h1 span').textContent = newName;
+                    document.querySelector('.card-body .fs-5').textContent = newName;
+                    bootstrap.Modal.getInstance(document.getElementById('editProjectModal')).hide();
+                    showMessage('Проект успешно обновлен!', 'success');
+                } else {
+                    showMessage(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при обновлении проекта', 'danger');
+            });
+    }
+
+    // Удаление проекта
+    function deleteProject() {
+        const modal = new bootstrap.Modal(document.getElementById('deleteProjectModal'));
+        modal.show();
+    }
+
+    // Подтверждение удаления проекта
+    function confirmDeleteProject() {
+        const projectId = document.getElementById('projectData').dataset.projectId;
+        fetch(`/api/projects/${projectId}`, {
+            method: 'DELETE'
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/';
+                } else {
+                    showMessage(data.message, 'danger');
+                    bootstrap.Modal.getInstance(document.getElementById('deleteProjectModal')).hide();
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при удалении проекта', 'danger');
+            });
+    }
+
+    // Функция для отображения сообщений
+    function showMessage(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style = 'top: 20px; right: 20px; z-index: 10000; min-width: 300px;';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+</script>
+</body>
+</html>

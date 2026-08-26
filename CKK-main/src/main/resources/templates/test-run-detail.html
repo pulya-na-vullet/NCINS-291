@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Детали тест-рана</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { background: rgba(255,255,255,.95); border-radius: 20px; margin-top: 2rem; margin-bottom: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,.1); backdrop-filter: blur(10px); }
+        .btn-white { background: white; border: 2px solid #e9ecef; border-radius: 12px; font-weight: 600; padding: .75rem 1.5rem; color: #495057; }
+        .card { border-radius: 15px; border: none; box-shadow: 0 5px 20px rgba(0,0,0,.08); }
+        .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px 15px 0 0 !important; border: none; }
+        .test-case-card { border-radius: 15px; border: none; box-shadow: 0 5px 20px rgba(0,0,0,.08); margin-bottom: 1rem; }
+        .stats-card { background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border-radius: 15px; padding: 1rem; text-align: center; }
+        .stats-number { font-size: 2rem; font-weight: 700; }
+        .progress { height: 12px; border-radius: 10px; }
+        .steps-container { background: rgba(102,126,234,.05); border-radius: 10px; padding: .75rem; margin-top: .5rem; }
+        .step-item { padding: .35rem 0; border-bottom: 1px solid rgba(0,0,0,.06); }
+        .step-item:last-child { border-bottom: none; }
+        .status-updating { opacity: .7; pointer-events: none; }
+        .bg-success { background: linear-gradient(135deg, #28a745, #20c997) !important; }
+        .bg-danger { background: linear-gradient(135deg, #dc3545, #fd7e14) !important; }
+        .bg-warning { background: linear-gradient(135deg, #ffc107, #fd7e14) !important; }
+        .bg-secondary { background: linear-gradient(135deg, #6c757d, #495057) !important; }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <a id="backToRunsLink" href="/project-qa" class="btn btn-white me-2"><i class="fas fa-arrow-left me-2"></i>Назад к тест-ранам</a>
+                <a id="backToProjectLink" href="/project-qa" class="btn btn-white me-2"><i class="fas fa-home me-2"></i>К проекту</a>
+            </div>
+            <form action="/logout" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-sign-out-alt me-1"></i> Выйти</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div>
+                        <h1 class="h3 mb-2"><i class="fas fa-play-circle me-2 text-primary"></i><span id="runTitle">Загрузка...</span></h1>
+                        <p class="text-muted mb-2" id="runDescription">Описание отсутствует</p>
+                        <div class="d-flex flex-wrap gap-3 small">
+                            <span><i class="fas fa-user me-1 text-primary"></i>Исполнитель: <strong id="runExecutor">—</strong></span>
+                            <span><i class="fas fa-user-plus me-1 text-info"></i>Создатель: <strong id="runCreator">—</strong></span>
+                            <span><i class="fas fa-calendar me-1 text-success"></i>Создан: <strong id="runCreatedAt">—</strong></span>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div class="mb-2"><span id="testRunStatusBadge" class="badge bg-secondary">Не начат</span></div>
+                        <select class="form-select" id="testRunStatusSelect">
+                            <option value="NOT_STARTED">Не начат</option>
+                            <option value="IN_PROGRESS">В процессе</option>
+                            <option value="COMPLETED">Завершен</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3 mb-2"><div class="stats-card"><div class="stats-number text-success" id="passedCount">0</div><small>Успешно</small></div></div>
+        <div class="col-md-3 mb-2"><div class="stats-card"><div class="stats-number text-danger" id="failedCount">0</div><small>Провалено</small></div></div>
+        <div class="col-md-3 mb-2"><div class="stats-card"><div class="stats-number text-warning" id="skippedCount">0</div><small>Пропущено</small></div></div>
+        <div class="col-md-3 mb-2"><div class="stats-card"><div class="stats-number text-secondary" id="notRunCount">0</div><small>Не выполнено</small></div></div>
+        <div class="col-12">
+            <div class="progress mt-2">
+                <div class="progress-bar bg-success" id="progressPassed" role="progressbar" style="width:0%"></div>
+                <div class="progress-bar bg-danger" id="progressFailed" role="progressbar" style="width:0%"></div>
+                <div class="progress-bar bg-warning" id="progressSkipped" role="progressbar" style="width:0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4 mb-2"><input id="searchInput" class="form-control" placeholder="Поиск по имени/описанию/ID..."></div>
+        <div class="col-md-3 mb-2">
+            <select id="statusFilter" class="form-select">
+                <option value="ALL">Все статусы</option>
+                <option value="NOT_RUN">Не выполнено</option>
+                <option value="PASSED">Успешно</option>
+                <option value="FAILED">Провалено</option>
+                <option value="SKIPPED">Пропущено</option>
+            </select>
+        </div>
+        <div class="col-md-5 mb-2 d-flex gap-2">
+            <button id="markSelectedPassed" class="btn btn-outline-success btn-sm"><i class="fas fa-check me-1"></i>Отметить выбранные как Passed</button>
+            <button id="markSelectedFailed" class="btn btn-outline-danger btn-sm"><i class="fas fa-times me-1"></i>Отметить выбранные как Failed</button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-list-check me-2"></i>Тест-кейсы тест-рана</h5>
+                    <span class="badge bg-primary" id="totalTestCases">0 тест-кейсов</span>
+                </div>
+                <div class="card-body">
+                    <div id="testCasesList"></div>
+                    <div id="emptyCases" class="text-muted text-center py-4 d-none">Нет тест-кейсов по выбранному фильтру</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="successToast" class="toast" role="alert"><div class="toast-header bg-success text-white"><strong class="me-auto">Успех</strong><button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button></div><div class="toast-body">Сохранено</div></div>
+    <div id="errorToast" class="toast" role="alert"><div class="toast-header bg-danger text-white"><strong class="me-auto">Ошибка</strong><button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button></div><div class="toast-body">Ошибка</div></div>
+</div>
+<div id="viewerData" data-user-id="{{ currentUserId }}" data-role="{{ currentUserRole }}" style="display:none;"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const TEST_CASE_STATUS_OPTIONS = [
+    ['NOT_RUN', 'Не выполнено'],
+    ['PASSED', 'Успешно'],
+    ['FAILED', 'Провалено'],
+    ['SKIPPED', 'Пропущено'],
+];
+
+let runId = null;
+let testRun = null;
+let commentTimers = new Map();
+let currentUserId = null;
+let currentUserRole = '';
+
+function getRunId() {
+    const m = window.location.pathname.match(/\/test-run\/(\d+)/);
+    return m ? Number(m[1]) : null;
+}
+
+function statusClass(status) {
+    if (status === 'PASSED' || status === 'COMPLETED') return 'bg-success';
+    if (status === 'FAILED') return 'bg-danger';
+    if (status === 'SKIPPED' || status === 'IN_PROGRESS') return 'bg-warning';
+    return 'bg-secondary';
+}
+
+function statusName(status) {
+    const names = {
+        NOT_RUN: 'Не выполнено', PASSED: 'Успешно', FAILED: 'Провалено', SKIPPED: 'Пропущено',
+        NOT_STARTED: 'Не начат', IN_PROGRESS: 'В процессе', COMPLETED: 'Завершен',
+    };
+    return names[status] || status || 'Неизвестно';
+}
+
+function showToast(type, message) {
+    const id = type === 'error' ? 'errorToast' : 'successToast';
+    const el = document.getElementById(id);
+    el.querySelector('.toast-body').textContent = message;
+    bootstrap.Toast.getOrCreateInstance(el).show();
+}
+
+function formatDate(val) {
+    if (!val) return '—';
+    const dt = new Date(val);
+    return Number.isNaN(dt.getTime()) ? val : dt.toLocaleString('ru-RU');
+}
+
+function escapeHtml(value) {
+    return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function canEditComment(row) {
+    if (!row) return true;
+    const hasComment = Boolean((row.comment || '').trim());
+    if (!row.commentAuthorId) {
+        if (hasComment && currentUserRole !== 'ADMIN') return false;
+        return true;
+    }
+    if (currentUserRole === 'ADMIN') return true;
+    return Number(row.commentAuthorId) === Number(currentUserId);
+}
+
+async function loadRun() {
+    const resp = await fetch(`/api/test-runs/${runId}/detailed`);
+    const data = await resp.json();
+    if (!data.success || !data.testRun) throw new Error(data.message || 'Не удалось загрузить тест-ран');
+    testRun = data.testRun;
+    renderHeader();
+    renderStats();
+    renderCases();
+}
+
+function renderHeader() {
+    document.title = `${testRun.title} - Детали тест-рана`;
+    document.getElementById('runTitle').textContent = testRun.title || 'Без названия';
+    document.getElementById('runDescription').textContent = testRun.description || 'Описание отсутствует';
+    document.getElementById('runExecutor').textContent = testRun.executorName || '—';
+    document.getElementById('runCreator').textContent = testRun.creatorName || '—';
+    document.getElementById('runCreatedAt').textContent = formatDate(testRun.createdAt);
+
+    const statusBadge = document.getElementById('testRunStatusBadge');
+    statusBadge.className = `badge ${statusClass(testRun.status)}`;
+    statusBadge.textContent = statusName(testRun.status);
+    document.getElementById('testRunStatusSelect').value = testRun.status || 'NOT_STARTED';
+
+    const projectId = testRun.projectId;
+    document.getElementById('backToRunsLink').href = `/project/${projectId}/test-runs`;
+    document.getElementById('backToProjectLink').href = `/project-qa/${projectId}`;
+}
+
+function computeStats(cases) {
+    const stats = { passed: 0, failed: 0, skipped: 0, notRun: 0, total: cases.length };
+    for (const row of cases) {
+        if (row.status === 'PASSED') stats.passed++;
+        else if (row.status === 'FAILED') stats.failed++;
+        else if (row.status === 'SKIPPED') stats.skipped++;
+        else stats.notRun++;
+    }
+    return stats;
+}
+
+function renderStats() {
+    const stats = computeStats(testRun.testCases || []);
+    document.getElementById('passedCount').textContent = stats.passed;
+    document.getElementById('failedCount').textContent = stats.failed;
+    document.getElementById('skippedCount').textContent = stats.skipped;
+    document.getElementById('notRunCount').textContent = stats.notRun;
+    document.getElementById('totalTestCases').textContent = `${stats.total} тест-кейсов`;
+    const total = stats.total || 1;
+    document.getElementById('progressPassed').style.width = `${(stats.passed / total) * 100}%`;
+    document.getElementById('progressFailed').style.width = `${(stats.failed / total) * 100}%`;
+    document.getElementById('progressSkipped').style.width = `${(stats.skipped / total) * 100}%`;
+}
+
+function getFilteredCases() {
+    const term = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+    const status = document.getElementById('statusFilter').value;
+    return (testRun.testCases || []).filter(row => {
+        const tc = row.testCase || {};
+        const hay = `tc-${tc.id || ''} ${tc.name || ''} ${tc.description || ''}`.toLowerCase();
+        if (term && !hay.includes(term)) return false;
+        if (status !== 'ALL' && row.status !== status) return false;
+        return true;
+    });
+}
+
+function renderCases() {
+    const rows = getFilteredCases();
+    const list = document.getElementById('testCasesList');
+    const empty = document.getElementById('emptyCases');
+    if (!rows.length) {
+        list.innerHTML = '';
+        empty.classList.remove('d-none');
+        return;
+    }
+    empty.classList.add('d-none');
+    list.innerHTML = rows.map(row => {
+        const tc = row.testCase || {};
+        const options = TEST_CASE_STATUS_OPTIONS.map(([value, name]) => `<option value="${value}" ${row.status === value ? 'selected' : ''}>${name}</option>`).join('');
+        const steps = (tc.steps || []).length ? `<div class="steps-container">${tc.steps.map(step => `<div class="step-item"><div><strong>${escapeHtml(step.stepNumber)}.</strong> ${escapeHtml(step.action)}</div>${step.expectedResult ? `<div class="small text-muted ms-3">Ожидаемый результат: ${escapeHtml(step.expectedResult)}</div>` : ''}</div>`).join('')}</div>` : '<small class="text-muted">Шаги не заданы</small>';
+        const commentEditable = canEditComment(row);
+        const commentMeta = row.commentAuthorName
+            ? `<div class="small text-muted mt-1">Автор: ${escapeHtml(row.commentAuthorName)}${row.commentUpdatedAt ? ` · ${formatDate(row.commentUpdatedAt)}` : ''}</div>`
+            : '<div class="small text-muted mt-1">Комментарий пока не сохранен</div>';
+        const saveCommentButton = commentEditable
+            ? `<button class="btn btn-primary btn-sm mt-2 save-case" data-test-case-id="${tc.id}"><i class="fas fa-save me-1"></i>Сохранить</button>`
+            : '';
+        const lockHint = !commentEditable
+            ? '<div class="small text-warning mt-1"><i class="fas fa-lock me-1"></i>Редактировать может только автор или администратор (legacy без автора — только администратор)</div>'
+            : '';
+        return `
+            <div class="card test-case-card" id="case-${tc.id}">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-2">
+                                <input class="form-check-input me-2 case-selector" type="checkbox" value="${tc.id}">
+                                <h6 class="mb-0">TC-${tc.id}: ${escapeHtml(tc.name)}</h6>
+                                <span class="badge ms-2 ${statusClass(row.status)}" id="badge-${tc.id}">${statusName(row.status)}</span>
+                            </div>
+                            <p class="text-muted small mb-2">${escapeHtml(tc.description || 'Описание отсутствует')}</p>
+                            <div class="small mb-2">
+                                <span class="me-3"><i class="fas fa-layer-group me-1 text-info"></i>Приоритет: <strong>${escapeHtml(tc.priority || 'Не указан')}</strong></span>
+                                <span><i class="fas fa-calendar me-1 text-success"></i>Создан: <strong>${formatDate(tc.createdAt)}</strong></span>
+                            </div>
+                            ${tc.preconditions ? `<div class="small mb-2"><strong class="text-primary">Прекондишены:</strong> ${escapeHtml(tc.preconditions)}</div>` : ''}
+                            <div><strong class="small text-primary">Шаги выполнения:</strong>${steps}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Статус выполнения:</label>
+                            <select class="form-select mb-2 case-status-select" data-test-case-id="${tc.id}">${options}</select>
+                            <div class="d-flex gap-1 mb-2">
+                                <button class="btn btn-outline-success btn-sm quick-status" data-status="PASSED" data-test-case-id="${tc.id}"><i class="fas fa-check"></i></button>
+                                <button class="btn btn-outline-danger btn-sm quick-status" data-status="FAILED" data-test-case-id="${tc.id}"><i class="fas fa-times"></i></button>
+                                <button class="btn btn-outline-warning btn-sm quick-status" data-status="SKIPPED" data-test-case-id="${tc.id}"><i class="fas fa-forward"></i></button>
+                            </div>
+                            <label class="form-label small fw-bold">Комментарий:</label>
+                            <textarea class="form-control" rows="4" id="comment-${tc.id}" data-test-case-id="${tc.id}" placeholder="Введите комментарий..." ${commentEditable ? '' : 'disabled'}>${escapeHtml(row.comment || '')}</textarea>
+                            ${saveCommentButton}
+                            ${commentMeta}
+                            ${lockHint}
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+    attachCaseHandlers();
+}
+
+function findCaseRow(testCaseId) {
+    return (testRun.testCases || []).find(row => row.testCase && Number(row.testCase.id) === Number(testCaseId));
+}
+
+async function saveCase(testCaseId, status, comment, quiet = false) {
+    const row = findCaseRow(testCaseId);
+    if (!row) return;
+    const payload = { status: status || row.status, comment: comment !== undefined ? comment : (row.comment || '') };
+    const resp = await fetch(`/api/test-runs/${runId}/test-cases/${testCaseId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    });
+    const data = await resp.json();
+    if (!data.success) throw new Error(data.message || 'Ошибка обновления тест-кейса');
+    row.status = payload.status;
+    row.comment = payload.comment;
+    if (data.testRunTestCase) {
+        row.commentAuthorId = data.testRunTestCase.commentAuthorId;
+        row.commentAuthorName = data.testRunTestCase.commentAuthorName;
+        row.commentAuthorUsername = data.testRunTestCase.commentAuthorUsername;
+        row.commentUpdatedAt = data.testRunTestCase.commentUpdatedAt;
+    }
+    const badge = document.getElementById(`badge-${testCaseId}`);
+    if (badge) {
+        badge.className = `badge ms-2 ${statusClass(row.status)}`;
+        badge.textContent = statusName(row.status);
+    }
+    renderStats();
+    if (!quiet) showToast('success', `TC-${testCaseId} обновлен`);
+}
+
+function attachCaseHandlers() {
+    document.querySelectorAll('.case-status-select').forEach(select => {
+        select.addEventListener('change', async (e) => {
+            const testCaseId = Number(e.target.dataset.testCaseId);
+            const comment = document.getElementById(`comment-${testCaseId}`)?.value || '';
+            try { await saveCase(testCaseId, e.target.value, comment); } catch (err) { showToast('error', err.message); }
+        });
+    });
+
+    document.querySelectorAll('.save-case').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const testCaseId = Number(e.currentTarget.dataset.testCaseId);
+            const status = document.querySelector(`.case-status-select[data-test-case-id="${testCaseId}"]`)?.value;
+            const comment = document.getElementById(`comment-${testCaseId}`)?.value || '';
+            try { await saveCase(testCaseId, status, comment); } catch (err) { showToast('error', err.message); }
+        });
+    });
+
+    document.querySelectorAll('.quick-status').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const testCaseId = Number(e.currentTarget.dataset.testCaseId);
+            const status = e.currentTarget.dataset.status;
+            const select = document.querySelector(`.case-status-select[data-test-case-id="${testCaseId}"]`);
+            if (select) select.value = status;
+            const comment = document.getElementById(`comment-${testCaseId}`)?.value || '';
+            try { await saveCase(testCaseId, status, comment); } catch (err) { showToast('error', err.message); }
+        });
+    });
+
+    document.querySelectorAll('textarea[data-test-case-id]').forEach(area => {
+        area.addEventListener('input', (e) => {
+            const testCaseId = Number(e.target.dataset.testCaseId);
+            if (commentTimers.has(testCaseId)) clearTimeout(commentTimers.get(testCaseId));
+            commentTimers.set(testCaseId, setTimeout(async () => {
+                const status = document.querySelector(`.case-status-select[data-test-case-id="${testCaseId}"]`)?.value;
+                try { await saveCase(testCaseId, status, e.target.value, true); } catch {}
+            }, 900));
+        });
+    });
+}
+
+async function updateRunStatus(status) {
+    const resp = await fetch(`/api/test-runs/${runId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+    });
+    const data = await resp.json();
+    if (!data.success) throw new Error(data.message || 'Ошибка обновления статуса тест-рана');
+    testRun.status = status;
+    renderHeader();
+}
+
+function selectedCaseIds() {
+    return Array.from(document.querySelectorAll('.case-selector:checked')).map(cb => Number(cb.value));
+}
+
+async function bulkSetStatus(status) {
+    const ids = selectedCaseIds();
+    if (!ids.length) {
+        showToast('error', 'Выберите хотя бы один тест-кейс');
+        return;
+    }
+    for (const testCaseId of ids) {
+        const comment = document.getElementById(`comment-${testCaseId}`)?.value || '';
+        await saveCase(testCaseId, status, comment, true);
+    }
+    renderCases();
+    showToast('success', `Обновлено тест-кейсов: ${ids.length}`);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const viewerData = document.getElementById('viewerData');
+    currentUserId = Number(viewerData?.dataset?.userId || 0) || null;
+    currentUserRole = viewerData?.dataset?.role || '';
+
+    runId = getRunId();
+    if (!runId) {
+        showToast('error', 'Некорректный ID тест-рана');
+        return;
+    }
+    try {
+        await loadRun();
+    } catch (err) {
+        showToast('error', err.message);
+    }
+
+    document.getElementById('testRunStatusSelect').addEventListener('change', async (e) => {
+        try { await updateRunStatus(e.target.value); showToast('success', 'Статус тест-рана обновлен'); }
+        catch (err) { showToast('error', err.message); }
+    });
+    document.getElementById('searchInput').addEventListener('input', renderCases);
+    document.getElementById('statusFilter').addEventListener('change', renderCases);
+    document.getElementById('markSelectedPassed').addEventListener('click', () => bulkSetStatus('PASSED'));
+    document.getElementById('markSelectedFailed').addEventListener('click', () => bulkSetStatus('FAILED'));
+});
+</script>
+</body>
+</html>

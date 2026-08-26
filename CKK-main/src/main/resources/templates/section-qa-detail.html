@@ -1,0 +1,229 @@
+<!-- src/main/resources/templates/section-qa-detail.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${section.name} + ' - QA Детали секции'">QA Детали секции</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .user-story-card {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .user-story-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+
+        .back-button {
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            transform: translateX(-5px);
+        }
+
+        .qa-badge {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <!-- Кнопка возврата -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="/project-qa/{{ section.project.id }}" class="btn btn-outline-secondary back-button">
+                <i class="fas fa-arrow-left me-2"></i>
+                Вернуться к проекту QA
+            </a>
+        </div>
+    </div>
+
+    <!-- Заголовок секции -->
+    <div class="row">
+        <div class="col-12">
+            <div class="section-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="mb-2">
+                            <i class="fas fa-layer-group me-3"></i>
+                            <span th:text="${section.name}">Название секции</span>
+                        </h1>
+                        <p class="mb-0 opacity-75">
+                            <i class="fas fa-hashtag me-2"></i>
+                            ID: <span th:text="${section.id}">1</span>
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <div class="badge bg-light text-dark fs-6">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            Создана: <span th:text="${#temporals.format(section.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2024 12:00</span>
+                        </div>
+                        <div class="badge qa-badge fs-6 mt-2">
+                            <i class="fas fa-vial me-2"></i>
+                            QA Режим
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Информация о секции -->
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Информация о секции
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Название секции:</label>
+                                <p class="mb-0 fs-5" th:text="${section.name}">Название секции</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">ID секции:</label>
+                                <p class="mb-0" th:text="${section.id}">1</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Проект:</label>
+                                <p class="mb-0">
+                                    <a href="/project-qa/{{ section.project.id }}" class="text-decoration-none">
+                                        <i class="fas fa-project-diagram me-1"></i>
+                                        <span th:text="${section.project.name}">Название проекта</span>
+                                    </a>
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Дата создания:</label>
+                                <p class="mb-0" th:text="${#temporals.format(section.createdAt, 'dd.MM.yyyy HH:mm:ss')}">01.01.2024 12:00:00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Stories секции -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-book me-2"></i>
+                        User Stories секции
+                    </h5>
+                    <span class="badge bg-light text-dark" th:text="${#lists.size(userStories)} + ' user stories'">0 user stories</span>
+                </div>
+                <div class="card-body">
+                    <div th:if="${#lists.isEmpty(userStories)}" class="text-center py-4">
+                        <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">User stories не найдены</p>
+                    </div>
+
+                    <div th:if="${not #lists.isEmpty(userStories)}">
+                        <div th:each="userStory : ${userStories}" class="card user-story-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="card-title mb-1">
+                                            <i class="fas fa-book me-2 text-info"></i>
+                                            <span th:text="${userStory.name}">Название user story</span>
+                                        </h5>
+                                        <small class="text-muted">
+                                            <i class="fas fa-hashtag me-1"></i>
+                                            ID: <span th:text="${userStory.id}">1</span> |
+                                            Создана: <span th:text="${#temporals.format(userStory.createdAt, 'dd.MM.yyyy')}">01.01.2024</span>
+                                        </small>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-warning status-badge">
+                                            <i class="fas fa-clock me-1"></i>
+                                            В работе
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QA Инструменты -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tools me-2"></i>
+                        QA Инструменты для секции
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-success w-100">
+                                <i class="fas fa-bug me-2"></i>
+                                Баг-репорт
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-primary w-100">
+                                <i class="fas fa-tasks me-2"></i>
+                                Тест-кейс
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-info w-100">
+                                <i class="fas fa-play-circle me-2"></i>
+                                Запустить тест
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-warning w-100">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Статистика
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

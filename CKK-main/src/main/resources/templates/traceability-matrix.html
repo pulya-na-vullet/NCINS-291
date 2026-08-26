@@ -1,0 +1,2065 @@
+<!-- src/main/resources/templates/traceability-matrix.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Матрица покрытия для {{ project.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .matrix-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .matrix-card {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .matrix-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .back-button {
+            /* transition: all 0.3s ease; */ /* Убрано */
+        }
+
+        .back-button:hover {
+            /* transform: translateX(-5px); */ /* Убрано */
+        }
+
+        /* === СТИЛИ МАТРИЦЫ === */
+        .matrix-wrapper {
+            overflow: auto;
+            max-height: 72vh;
+            padding: 15px;
+            cursor: default;
+        }
+        .matrix-wrapper.grab-enabled {
+            cursor: grab;
+            touch-action: pan-y;
+        }
+        .matrix-wrapper.grab-enabled.dragging {
+            cursor: grabbing;
+            user-select: none;
+        }
+        .matrix-top-scroll {
+            overflow-x: auto;
+            overflow-y: hidden;
+            height: 14px;
+            border-radius: 8px;
+            margin: 0 15px 4px 15px;
+            background: #f1f3f5;
+            border: 1px solid #e9ecef;
+        }
+        .matrix-top-scroll-inner {
+            height: 1px;
+        }
+        .matrix-scroll-hint {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin: 0 15px 8px 15px;
+        }
+
+        .traceability-table {
+            table-layout: auto;
+            min-width: 40%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .matrix-wrapper.performance-mode .user-story-header,
+        .matrix-wrapper.performance-mode .user-story-cell {
+            position: static !important;
+            left: auto !important;
+        }
+        .matrix-wrapper.performance-mode .rotated-link[data-bs-toggle="popover"] {
+            pointer-events: none;
+            opacity: 0.9;
+        }
+        .matrix-wrapper.performance-mode::before {
+            content: "Режим производительности: превью и sticky-колонка отключены";
+            position: sticky;
+            top: 0;
+            display: block;
+            z-index: 60;
+            margin: -8px 0 8px 0;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #664d03;
+            background: #fff3cd;
+            border: 1px solid #ffecb5;
+        }
+        .virtual-spacer-row > td {
+            padding: 0 !important;
+            border: none !important;
+            background: transparent !important;
+        }
+        .user-story-row.selected-us-row td {
+            background-color: #e8f2ff !important;
+        }
+        .us-filter-hidden {
+            display: none !important;
+        }
+        .virtual-col-hidden {
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+        .us-focus-panel {
+            margin: 8px 15px 10px 15px;
+            border: 1px solid #cfe2ff;
+            border-radius: 10px;
+            background: #f4f9ff;
+            padding: 10px 12px;
+        }
+        .us-focus-list {
+            max-height: 96px;
+            overflow: auto;
+            font-size: 0.9rem;
+        }
+        .us-tc-list-btn {
+            float: right;
+            margin-left: 8px;
+            padding: 2px 8px;
+            font-size: 11px;
+            line-height: 1.2;
+            border-radius: 999px;
+        }
+
+        .user-story-header {
+            padding: 15px 10px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #dee2e6;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+        }
+
+        .test-case-header {
+            height: 2cm;
+            width: fit-content !important;
+            padding: 2px 5px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #dee2e6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            vertical-align: bottom;
+            white-space: nowrap;
+            overflow: visible;
+            position: relative;
+        }
+        .tc-ai-score-badge {
+            display: block;
+            font-size: 10px;
+            line-height: 1.2;
+            padding: 2px 4px;
+            border-radius: 8px;
+            margin: 0 auto 4px auto;
+            max-width: 56px;
+            white-space: normal;
+        }
+        .tc-ai-score-badge.no-score { background: #6c757d; color: #fff; }
+        .tc-ai-score-badge.low-score { background: #28a745; color: #fff; }
+        .tc-ai-score-badge.medium-score { background: #ffc107; color: #212529; }
+        .tc-ai-score-badge.high-score { background: #dc3545; color: #fff; }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.75rem;
+        }
+        .metric-panel {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 0.75rem;
+            background: #f8f9fa;
+        }
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.2rem 0;
+            font-size: 0.92rem;
+        }
+        .metric-label {
+            color: #495057;
+        }
+        .metric-value {
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .test-case-header .rotated-link {
+            height: 1.1cm;
+            display: block;
+            transform: rotate(270deg);
+            transform-origin: center;
+            color: white !important;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 5px 0;
+            transition: color 0.2s ease;
+            font-size: 12px; /* уменьшаем размер шрифта */
+        }
+
+        .test-case-header .rotated-link:hover {
+            text-decoration: underline;
+        }
+        .popover.tc-preview-popover {
+            max-width: 520px;
+            width: 520px;
+        }
+        .popover.tc-preview-popover .popover-body {
+            max-height: 360px;
+            overflow-y: auto;
+            font-size: 0.875rem;
+        }
+        .tc-preview-section {
+            margin-bottom: 0.5rem;
+        }
+        .tc-preview-section:last-child {
+            margin-bottom: 0;
+        }
+        .tc-preview-muted {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .user-story-cell {
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            position: sticky;
+            left: 0;
+            background: white;
+            z-index: 5;
+            font-weight: 500;
+        }
+        .user-story-cell.criticality-low {
+            background: #d1e7dd;
+        }
+        .user-story-cell.criticality-medium {
+            background: #fff3cd;
+        }
+        .user-story-cell.criticality-high {
+            background: #f8d7da;
+        }
+
+        .linked-cell {
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+            background-color: #d4edda !important;
+        }
+
+        .linked-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .unlinked-cell {
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+            background-color: #f8f9fa !important;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .test-case-header {
+                padding: 50px 3px 3px 3px;
+                font-size: 12px;
+            }
+
+            .traceability-table {
+                font-size: 12px;
+            }
+        }
+
+        /* Стили для комментариев */
+        .comment-card {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            /* transition: background-color 0.2s ease; */ /* Убрано */
+        }
+
+        .comment-card:hover {
+            background-color: #e9ecef;
+        }
+
+        .comment-actions {
+            opacity: 0;
+            /* transition: opacity 0.2s ease; */ /* Убрано */
+            margin-top: 0.5rem;
+        }
+
+        .comment-card:hover .comment-actions {
+            opacity: 1;
+        }
+
+        .comment-actions .btn {
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .comment-input-group {
+            margin-bottom: 1rem;
+        }
+
+        .user-avatar {
+            font-size: 1.5rem;
+        }
+
+        .comment-content {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* Стили для AI комментариев */
+        .ai-comment {
+            border-left: 4px solid #0dcaf0;
+            background-color: #f0f9ff;
+        }
+
+        .ai-comment:hover {
+            background-color: #e0f2fe;
+        }
+
+        /* Стили для сортировки комментариев */
+        .comments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .sort-dropdown .btn {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .sort-dropdown .dropdown-menu {
+            min-width: 180px;
+        }
+
+        .sort-option {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sort-option:hover {
+            background-color: #f8f9fa;
+        }
+
+        .sort-option.active {
+            background-color: #e9ecef;
+            font-weight: 500;
+        }
+
+        .sort-option .check-icon {
+            color: #28a745;
+            margin-left: 0.5rem;
+        }
+
+        /* === ИСПРАВЛЕНИЕ: перенос User Stories в модальном окне === */
+        .user-stories-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            min-height: 1.5em;
+            align-items: flex-start;
+            width: 100%; /* Ключевое изменение */
+        }
+
+        .user-stories-container .badge {
+            flex: 0 1 auto; /* Не растягивать, но позволить сжиматься */
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: normal; /* Разрешить перенос текста внутри бейджа */
+            max-width: 100%; /* Не выходить за пределы контейнера */
+        }
+        .ai-quality-btn {
+            background: #ffffff;
+            color: #4b2f7f;
+            border: 2px solid #ffffff;
+            border-radius: 12px;
+            font-weight: 700;
+            padding: 0.6rem 1rem;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
+            transition: all 0.2s ease-in-out;
+        }
+        .ai-quality-btn:hover {
+            color: #3a2563;
+            background: #f3ecff;
+            border-color: #f3ecff;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+        }
+        .ai-quality-btn:focus {
+            color: #3a2563;
+            background: #f3ecff;
+            border-color: #f3ecff;
+            box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.4);
+        }
+        .ai-quality-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+        }
+        .render-progress-panel {
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: opacity 0.2s ease;
+            margin-top: 10px;
+        }
+        .render-progress-panel.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .render-progress-inner {
+            padding: 8px 12px 10px 12px;
+        }
+        .render-progress-text {
+            font-size: 12px;
+            color: #495057;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .render-progress-track {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .render-progress-bar {
+            height: 100%;
+            width: 0;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #4f7cff, #6f42c1);
+            transition: width 0.18s ease;
+        }
+    </style>
+</head>
+<body data-user-role="{{ userRole }}" data-current-user-id="{{ currentUserId }}">
+<div class="container py-4">
+    <!-- Кнопка возврата -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="/projects/{{ project.id }}" class="btn btn-secondary back-button" id="backToProjectBtn">
+                <i class="fas fa-arrow-left me-2"></i>
+                Вернуться к проекту
+            </a>
+        </div>
+    </div>
+
+    <!-- Заголовок -->
+    <div class="row">
+        <div class="col-12">
+            <div class="matrix-header">
+                <h1 class="mb-2">
+                    <i class="fas fa-table me-3"></i>
+                    Матрица покрытия
+                </h1>
+                <p class="mb-0 opacity-75">
+                    Проект: {{ project.name }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Матрица -->
+    <div class="row mb-3">
+        <div class="col-lg-4 col-md-6 mb-2">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="mb-2"><i class="fas fa-chart-pie me-2"></i>Покрытие матрицы</h6>
+                    <div><strong>Покрыто US:</strong> {{ matrixMetrics.coverage.covered_us }}</div>
+                    <div><strong>Не покрыто US:</strong> {{ matrixMetrics.coverage.uncovered_us }}</div>
+                    <div><strong>Всего US:</strong> {{ matrixMetrics.coverage.total_us }}</div>
+                    <div><strong>Покрытие:</strong> {{ matrixMetrics.coverage.coverage_percent }}%</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8 col-md-6 mb-2">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="mb-2"><i class="fas fa-traffic-light me-2"></i>Категории критичности US</h6>
+                    <div class="metrics-grid">
+                        <div class="metric-panel">
+                            <div class="metric-row">
+                                <span class="metric-label">Критически важных (8-10)</span>
+                                <span class="metric-value text-danger">{{ matrixMetrics.criticality.high_count }}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Средней важности (5-7)</span>
+                                <span class="metric-value text-warning">{{ matrixMetrics.criticality.medium_count }}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Низкой важности (1-4)</span>
+                                <span class="metric-value text-success">{{ matrixMetrics.criticality.low_count }}</span>
+                            </div>
+                            <div class="metric-row border-top mt-1 pt-2">
+                                <span class="metric-label">Всего US</span>
+                                <span class="metric-value">{{ matrixMetrics.criticality.total_us }}</span>
+                            </div>
+                        </div>
+                        <div class="metric-panel">
+                            <div class="metric-row">
+                                <span class="metric-label">Критические покрыто / не покрыто</span>
+                                <span class="metric-value">{{ matrixMetrics.criticality_coverage.high_covered }} / {{ matrixMetrics.criticality_coverage.high_uncovered }}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Средние покрыто / не покрыто</span>
+                                <span class="metric-value">{{ matrixMetrics.criticality_coverage.medium_covered }} / {{ matrixMetrics.criticality_coverage.medium_uncovered }}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Низкие покрыто / не покрыто</span>
+                                <span class="metric-value">{{ matrixMetrics.criticality_coverage.low_covered }} / {{ matrixMetrics.criticality_coverage.low_uncovered }}</span>
+                            </div>
+                            <div class="metric-row border-top mt-1 pt-2">
+                                <span class="metric-label">ТК без привязки к US</span>
+                                <span class="metric-value">{{ matrixMetrics.orphan_test_cases.count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 mb-2">
+            <div class="d-flex justify-content-end gap-2">
+                <a class="btn btn-outline-light" id="exportExcelBtn" href="/api/projects/{{ project.id }}/traceability-matrix/export-excel">
+                    <i class="fas fa-file-excel me-2"></i>Выгрузить в Excel
+                </a>
+                <button class="btn ai-quality-btn" id="runAiQualityBtn">
+                    <i class="fas fa-robot me-2"></i>ИИ-оценка тестовой модели
+                </button>
+            </div>
+            <div class="render-progress-panel d-none" id="renderProgressPanel">
+                <div class="render-progress-inner">
+                    <div class="render-progress-text">
+                        <span id="renderProgressLabel">Подготовка матрицы…</span>
+                        <strong id="renderProgressValue">0%</strong>
+                    </div>
+                    <div class="render-progress-track">
+                        <div class="render-progress-bar" id="renderProgressBar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card matrix-card">
+                <div class="card-body">
+                    <div class="matrix-scroll-hint">
+                        <i class="fas fa-hand-paper me-1"></i>
+                        Зажмите ЛКМ и тяните таблицу, либо используйте Shift + колесо
+                    </div>
+                    <div class="matrix-top-scroll d-none" id="matrixTopScroll">
+                        <div class="matrix-top-scroll-inner" id="matrixTopScrollInner"></div>
+                    </div>
+                    <div class="us-focus-panel d-none" id="usFocusPanel">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <strong id="usFocusTitle">Выбрана US</strong>
+                                <div class="text-muted small">Показаны только пересекающиеся ТК; пустые скрыты</div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary" id="clearUsFocusBtn">
+                                Сбросить
+                            </button>
+                        </div>
+                        <div class="us-focus-list mt-2" id="usFocusList"></div>
+                    </div>
+                    <div class="matrix-wrapper" id="matrixWrapper">
+                        {% if not matrixHtml %}
+                            <div class="no-data">
+                                <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">Матрица покрытия пока не сформирована</p>
+                                <small class="text-muted">Добавьте секции, user stories и тест-кейсы</small>
+                            </div>
+                        {% else %}
+                            {{ matrixHtml|safe }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно AI-оценки модели -->
+<div class="modal fade" id="aiQualityModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-robot me-2"></i>ИИ-оценка тестовой модели</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="aiQualityModalBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <div class="mt-2 text-muted">Запросите оценку модели кнопкой ниже</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-primary" id="rerunAiQualityBtn">
+                    <i class="fas fa-rotate-right me-1"></i>Перезапросить
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно деталей тест-кейса -->
+<div class="modal fade" id="testCaseDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTestCaseTitle">
+                    <i class="fas fa-vial me-2"></i>
+                    Детали тест-кейса
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalTestCaseContent">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="editInModalBtn">Редактировать</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно списка ТК для выбранной US -->
+<div class="modal fade" id="usTcListModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="usTcListModalTitle">
+                    <i class="fas fa-link me-2"></i>Пересечения US ↔ ТК
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="usTcListModalBody">
+                <div class="text-muted">Загрузка...</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Скрытое поле для projectId -->
+<div id="projectData" data-project-id="{{ project.id }}" style="display: none;"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let currentTestCaseData = null;
+    let availableTags = [];
+    let isEditingInModal = false;
+    let currentCommentSort = 'desc'; // 'desc' - новые сверху, 'asc' - старые сверху
+    const matrixPreviewCache = new Map();
+    const currentUserRole = document.body.dataset.userRole || '';
+    const currentUserId = Number(document.body.dataset.currentUserId || 0) || null;
+    let activeUsColumnFilter = null;
+    let renderProgressValue = 0;
+    let renderProgressTimer = null;
+
+    function setRenderProgress(value, label) {
+        const panel = document.getElementById('renderProgressPanel');
+        const bar = document.getElementById('renderProgressBar');
+        const valueEl = document.getElementById('renderProgressValue');
+        const labelEl = document.getElementById('renderProgressLabel');
+        if (!panel || !bar || !valueEl || !labelEl) return;
+        panel.classList.remove('d-none');
+        renderProgressValue = Math.max(renderProgressValue, Math.min(value, 100));
+        bar.style.width = `${renderProgressValue}%`;
+        valueEl.textContent = `${Math.round(renderProgressValue)}%`;
+        if (label) labelEl.textContent = label;
+    }
+
+    function startRenderProgress() {
+        setRenderProgress(8, 'Запуск рендера страницы…');
+        if (renderProgressTimer) clearInterval(renderProgressTimer);
+        renderProgressTimer = setInterval(() => {
+            if (renderProgressValue >= 92) {
+                clearInterval(renderProgressTimer);
+                renderProgressTimer = null;
+                return;
+            }
+            setRenderProgress(renderProgressValue + 2, 'Инициализация элементов матрицы…');
+        }, 180);
+    }
+
+    function finishRenderProgress() {
+        const panel = document.getElementById('renderProgressPanel');
+        if (renderProgressTimer) {
+            clearInterval(renderProgressTimer);
+            renderProgressTimer = null;
+        }
+        setRenderProgress(100, 'Рендер матрицы завершён');
+        setTimeout(() => {
+            panel?.classList.add('hidden');
+            setTimeout(() => {
+                panel?.classList.add('d-none');
+                panel?.classList.remove('hidden');
+            }, 260);
+        }, 220);
+    }
+
+    function nextFrame() {
+        return new Promise(resolve => requestAnimationFrame(() => resolve()));
+    }
+
+    function canEditCommentAction(comment) {
+        if (!comment || comment.commentType === 'AI_GENERATED') return false;
+        if (currentUserRole === 'ADMIN') return true;
+        return Boolean(comment.userId) && Number(comment.userId) === currentUserId;
+    }
+
+    startRenderProgress();
+    setTimeout(() => setRenderProgress(25, 'Получение данных проекта…'), 80);
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        const projectId = document.getElementById('projectData').dataset.projectId;
+        setRenderProgress(35, 'Настройка навигации и справочников…');
+        updateBackButtonLink(projectId);
+        loadProjectTags(projectId);
+        await nextFrame();
+        setRenderProgress(50, 'Виртуализация матрицы…');
+        initializeMatrixVirtualization();
+        await nextFrame();
+        setRenderProgress(65, 'Настройка фильтров по US…');
+        initializeUsFocusMode();
+        await nextFrame();
+        setRenderProgress(78, 'Подготовка превью ТК…');
+        initializeMatrixPreviews();
+        await nextFrame();
+        setRenderProgress(90, 'Финализация скроллинга и миникарты…');
+        initializeMatrixScrolling();
+        await nextFrame();
+        finishRenderProgress();
+
+        document.addEventListener('click', function (e) {
+            const link = e.target.closest('.rotated-link');
+            if (link && link.dataset.openModal === 'true') {
+                e.preventDefault();
+                const testCaseId = link.dataset.testCaseId;
+                if (testCaseId) openTestCaseModal(testCaseId);
+            }
+        });
+
+        const aiQualityModal = new bootstrap.Modal(document.getElementById('aiQualityModal'));
+        document.getElementById('runAiQualityBtn').addEventListener('click', function () {
+            aiQualityModal.show();
+            runAiQualityAssessment(projectId, false);
+        });
+        document.getElementById('rerunAiQualityBtn').addEventListener('click', function () {
+            runAiQualityAssessment(projectId, true);
+        });
+    });
+
+    function initializeMatrixVirtualization() {
+        const wrapper = document.getElementById('matrixWrapper');
+        if (!wrapper) return;
+        const table = wrapper.querySelector('.traceability-table');
+        const tbody = table?.querySelector('tbody');
+        if (!table || !tbody) return;
+
+        const allRows = Array.from(tbody.querySelectorAll('tr.user-story-row'));
+        const headerRow = table.tHead?.rows?.[0];
+        const headerCells = Array.from(headerRow?.cells || []);
+        const nonStickyColCount = Math.max(headerCells.length - 1, 0);
+
+        const headerHeight = table.tHead?.getBoundingClientRect().height || 60;
+        const rowHeightSamples = allRows.slice(0, 30).map(row => row.getBoundingClientRect().height).filter(Boolean);
+        const avgRowHeight = rowHeightSamples.length
+            ? rowHeightSamples.reduce((acc, val) => acc + val, 0) / rowHeightSamples.length
+            : 38;
+        const rowHeight = Math.max(Math.round(avgRowHeight), 28);
+        const colCount = table.querySelectorAll('thead th').length || 1;
+        const rowOverscan = 14;
+        let rowRenderStart = -1;
+        let rowRenderEnd = -1;
+        let frameId = 0;
+        let colRenderStart = -1;
+        let colRenderEnd = -1;
+        let columnMetricsReady = false;
+        let stickyWidth = 180;
+        let colWidths = [];
+        let colPrefix = [0];
+        const colOverscanPx = 360;
+
+        wrapper.dataset.totalRows = String(allRows.length);
+
+        if (allRows.length < 140 && nonStickyColCount < 120) {
+            return;
+        }
+
+        const topSpacer = document.createElement('tr');
+        topSpacer.className = 'virtual-spacer-row';
+        topSpacer.innerHTML = `<td colspan="${colCount}" style="height:0px"></td>`;
+
+        const bottomSpacer = document.createElement('tr');
+        bottomSpacer.className = 'virtual-spacer-row';
+        bottomSpacer.innerHTML = `<td colspan="${colCount}" style="height:0px"></td>`;
+
+        const ensureColumnMetrics = () => {
+            if (columnMetricsReady) return;
+            stickyWidth = Math.max(Math.round(headerCells[0]?.getBoundingClientRect().width || 180), 120);
+            colWidths = [];
+            for (let i = 1; i < headerCells.length; i += 1) {
+                const width = Math.max(Math.round(headerCells[i].getBoundingClientRect().width || 70), 36);
+                colWidths.push(width);
+            }
+            colPrefix = [0];
+            for (let i = 0; i < colWidths.length; i += 1) {
+                colPrefix.push(colPrefix[i] + colWidths[i]);
+            }
+            columnMetricsReady = true;
+        };
+
+        const findColumnIndexByOffset = (offset) => {
+            let left = 0;
+            let right = colPrefix.length - 2;
+            let answer = Math.max(colPrefix.length - 2, 0);
+            while (left <= right) {
+                const mid = (left + right) >> 1;
+                if (colPrefix[mid + 1] >= offset) {
+                    answer = mid;
+                    right = mid - 1;
+                } else {
+                    left = mid + 1;
+                }
+            }
+            return answer;
+        };
+
+        const toggleColumnRange = (fromCol, toCol, visible) => {
+            if (fromCol > toCol) return;
+            const fromCellIndex = fromCol + 1;
+            const toCellIndex = toCol + 1;
+
+            for (let cellIndex = fromCellIndex; cellIndex <= toCellIndex; cellIndex += 1) {
+                if (headerCells[cellIndex]) {
+                    headerCells[cellIndex].classList.toggle('virtual-col-hidden', !visible);
+                }
+            }
+
+            tbody.querySelectorAll('tr.user-story-row').forEach(row => {
+                for (let cellIndex = fromCellIndex; cellIndex <= toCellIndex; cellIndex += 1) {
+                    if (row.cells[cellIndex]) {
+                        row.cells[cellIndex].classList.toggle('virtual-col-hidden', !visible);
+                    }
+                }
+            });
+        };
+
+        const applyColumnWindow = (fullRefresh = false) => {
+            ensureColumnMetrics();
+            if (!colWidths.length) return;
+            const effectiveViewportWidth = Math.max(wrapper.clientWidth - stickyWidth, 80);
+            const leftPx = Math.max(wrapper.scrollLeft - colOverscanPx, 0);
+            const rightPx = wrapper.scrollLeft + effectiveViewportWidth + colOverscanPx;
+
+            const nextStart = Math.max(findColumnIndexByOffset(leftPx), 0);
+            const nextEnd = Math.min(findColumnIndexByOffset(rightPx) + 1, colWidths.length);
+
+            if (!fullRefresh && nextStart === colRenderStart && nextEnd === colRenderEnd) {
+                return;
+            }
+
+            if (fullRefresh || colRenderStart < 0 || colRenderEnd < 0) {
+                toggleColumnRange(0, colWidths.length - 1, false);
+                toggleColumnRange(nextStart, nextEnd - 1, true);
+            } else {
+                if (nextStart > colRenderStart) {
+                    toggleColumnRange(colRenderStart, nextStart - 1, false);
+                }
+                if (nextStart < colRenderStart) {
+                    toggleColumnRange(nextStart, colRenderStart - 1, true);
+                }
+                if (nextEnd < colRenderEnd) {
+                    toggleColumnRange(nextEnd, colRenderEnd - 1, false);
+                }
+                if (nextEnd > colRenderEnd) {
+                    toggleColumnRange(colRenderEnd, nextEnd - 1, true);
+                }
+            }
+
+            colRenderStart = nextStart;
+            colRenderEnd = nextEnd;
+        };
+
+        const renderWindow = () => {
+            frameId = 0;
+            const scrollTop = wrapper.scrollTop;
+            const viewportHeight = wrapper.clientHeight;
+            const relativeTop = Math.max(scrollTop - headerHeight, 0);
+            const start = Math.max(Math.floor(relativeTop / rowHeight) - rowOverscan, 0);
+            const visibleRows = Math.ceil((viewportHeight + headerHeight) / rowHeight) + rowOverscan * 2;
+            const end = Math.min(start + visibleRows, allRows.length);
+
+            if (start === rowRenderStart && end === rowRenderEnd) {
+                applyColumnWindow(false);
+                return;
+            }
+            rowRenderStart = start;
+            rowRenderEnd = end;
+
+            const fragment = document.createDocumentFragment();
+            topSpacer.firstElementChild.style.height = `${start * rowHeight}px`;
+            fragment.appendChild(topSpacer);
+            for (let i = start; i < end; i += 1) {
+                fragment.appendChild(allRows[i]);
+            }
+            bottomSpacer.firstElementChild.style.height = `${Math.max((allRows.length - end) * rowHeight, 0)}px`;
+            fragment.appendChild(bottomSpacer);
+            tbody.replaceChildren(fragment);
+            applyColumnWindow(true);
+        };
+
+        const scheduleRender = () => {
+            if (frameId) return;
+            frameId = requestAnimationFrame(renderWindow);
+        };
+
+        wrapper.addEventListener('scroll', scheduleRender, { passive: true });
+        window.addEventListener('resize', scheduleRender);
+        renderWindow();
+    }
+
+    function initializeUsFocusMode() {
+        const wrapper = document.getElementById('matrixWrapper');
+        const panel = document.getElementById('usFocusPanel');
+        const panelTitle = document.getElementById('usFocusTitle');
+        const panelList = document.getElementById('usFocusList');
+        const clearBtn = document.getElementById('clearUsFocusBtn');
+        const table = wrapper?.querySelector('.traceability-table');
+        if (!wrapper || !panel || !panelTitle || !panelList || !clearBtn || !table) return;
+        const usTcModalEl = document.getElementById('usTcListModal');
+        const usTcModalTitleEl = document.getElementById('usTcListModalTitle');
+        const usTcModalBodyEl = document.getElementById('usTcListModalBody');
+        const usTcModal = usTcModalEl ? new bootstrap.Modal(usTcModalEl) : null;
+        const currentProjectId = document.getElementById('projectData')?.dataset?.projectId || '';
+
+        const normalizeTcNavigationUrl = (rawUrl, tcId) => {
+            try {
+                if (rawUrl) {
+                    const normalized = new URL(rawUrl, window.location.origin);
+                    if (tcId && !normalized.searchParams.get('testCaseId')) {
+                        normalized.searchParams.set('testCaseId', String(tcId));
+                    }
+                    return normalized.toString();
+                }
+            } catch (_) {
+                // ignore and fallback below
+            }
+            return '';
+        };
+
+        const getIntersections = (row) => {
+            const intersections = [];
+            const headers = table.querySelectorAll('thead th.test-case-header');
+            const cells = row.querySelectorAll('td');
+            cells.forEach((cell, idx) => {
+                if (idx === 0) return;
+                if (!cell.classList.contains('linked-cell')) return;
+                const th = headers[idx - 1];
+                const tcLink = th?.querySelector('.rotated-link');
+                const tcId = tcLink?.dataset?.testCaseId || idx;
+                const tcLabel = tcLink?.textContent?.trim() || `TC-${tcId}`;
+                const tcUrl = normalizeTcNavigationUrl(tcLink?.getAttribute('href') || '', tcId);
+                intersections.push({ id: String(tcId), label: tcLabel, url: tcUrl });
+            });
+            return intersections;
+        };
+
+        const applyColumnFilter = () => {
+            const headerCells = table.querySelectorAll('thead th.test-case-header');
+            headerCells.forEach((th, idx) => {
+                const colIndex = idx + 1;
+                const hide = activeUsColumnFilter && !activeUsColumnFilter.has(colIndex);
+                th.classList.toggle('us-filter-hidden', Boolean(hide));
+            });
+            table.querySelectorAll('tbody tr.user-story-row').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                for (let i = 1; i < cells.length; i += 1) {
+                    const hide = activeUsColumnFilter && !activeUsColumnFilter.has(i);
+                    cells[i].classList.toggle('us-filter-hidden', Boolean(hide));
+                }
+            });
+        };
+
+        const renderFocusPanel = (row) => {
+            const usCell = row.querySelector('.user-story-cell');
+            const usText = usCell?.textContent?.trim() || 'Выбрана US';
+            panelTitle.textContent = usText;
+
+            const intersections = getIntersections(row);
+
+            if (!intersections.length) {
+                panelList.innerHTML = '<div class="text-muted">Для этой US нет пересечений с ТК</div>';
+            } else {
+                panelList.innerHTML = intersections
+                    .map(tc => `<span class="badge bg-primary me-1 mb-1">${tc.label}</span>`)
+                    .join('');
+            }
+            panel.classList.remove('d-none');
+        };
+
+        const showUsTcModal = (row) => {
+            if (!usTcModal || !usTcModalTitleEl || !usTcModalBodyEl) return;
+            const usCell = row.querySelector('.user-story-cell');
+            const usText = usCell?.textContent?.trim() || 'US';
+            const intersections = getIntersections(row);
+            usTcModalTitleEl.innerHTML = `<i class="fas fa-link me-2"></i>${usText}: пересекающиеся ТК`;
+            if (!intersections.length) {
+                usTcModalBodyEl.innerHTML = '<div class="text-muted">Для этой US нет пересечений с тест-кейсами.</div>';
+            } else {
+                const linkLines = intersections
+                    .map(tc => {
+                        if (!tc.url) return '';
+                        try {
+                            return new URL(tc.url, window.location.origin).toString();
+                        } catch (_) {
+                            return tc.url;
+                        }
+                    })
+                    .filter(Boolean);
+
+                usTcModalBodyEl.innerHTML = `
+                    <div class="mb-2">Найдено пересечений: <strong>${intersections.length}</strong></div>
+                    <div class="mb-2">
+                        <button class="btn btn-sm btn-outline-secondary" id="copyUsTcLinksBtn">
+                            <i class="fas fa-copy me-1"></i>Скопировать ссылки
+                        </button>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        ${intersections.map(tc => `
+                            <a class="btn btn-sm btn-outline-primary open-us-tc-btn"
+                                    data-test-case-id="${tc.id}"
+                                    data-test-case-url="${tc.url || ''}"
+                                    href="${tc.url || '#'}">
+                                ${tc.label}
+                            </a>
+                        `).join('')}
+                    </div>
+                `;
+                const copyBtn = usTcModalBodyEl.querySelector('#copyUsTcLinksBtn');
+                if (copyBtn) {
+                    copyBtn.addEventListener('click', async () => {
+                        if (!linkLines.length) {
+                            showMessage('Ссылки на ТК не найдены', 'warning');
+                            return;
+                        }
+                        try {
+                            await navigator.clipboard.writeText(linkLines.join('\n'));
+                            showMessage(`Скопировано ссылок: ${linkLines.length}`, 'success');
+                        } catch (_) {
+                            showMessage('Не удалось скопировать ссылки в буфер', 'danger');
+                        }
+                    });
+                }
+                usTcModalBodyEl.querySelectorAll('.open-us-tc-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const tcId = (btn.dataset.testCaseId || '').trim();
+                        const tcUrlRaw = (btn.dataset.testCaseUrl || '').trim();
+                        const tcUrl = normalizeTcNavigationUrl(tcUrlRaw, tcId);
+                        if (tcUrl) {
+                            // Keep native link behavior (including context menu/open in new tab).
+                            btn.setAttribute('href', tcUrl);
+                            return;
+                        }
+                        e.preventDefault();
+                        if (!tcId) {
+                            showMessage('Не удалось определить ID тест-кейса', 'danger');
+                            return;
+                        }
+                        try {
+                            const response = await fetch(`/api/test-cases/${tcId}`);
+                            const data = await response.json();
+                            if (data.success && data.testCase && data.testCase.testSuiteId) {
+                                const fallbackUrl = `/test-suite/${data.testCase.testSuiteId}?testCaseId=${tcId}`;
+                                btn.setAttribute('href', fallbackUrl);
+                                window.location.href = fallbackUrl;
+                                return;
+                            }
+                        } catch (_) {
+                            // fallback below
+                        }
+                        if (currentProjectId) {
+                            window.location.href = `/project/${currentProjectId}/traceability-matrix`;
+                        } else {
+                            showMessage('Не удалось построить ссылку на тест-кейс', 'danger');
+                        }
+                    });
+                });
+            }
+            usTcModal.show();
+        };
+
+        const ensureUsButtons = () => {
+            table.querySelectorAll('tbody tr.user-story-row').forEach(row => {
+                const usCell = row.querySelector('.user-story-cell');
+                if (!usCell) return;
+                const existingBtn = usCell.querySelector('.us-tc-list-btn');
+                const intersections = getIntersections(row);
+                if (!intersections.length) {
+                    if (existingBtn) existingBtn.remove();
+                    return;
+                }
+                if (existingBtn) return;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn-outline-primary us-tc-list-btn';
+                btn.innerHTML = '<i class="fas fa-list-ul me-1"></i>ТК';
+                btn.title = 'Список пересекающихся тест-кейсов';
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showUsTcModal(row);
+                });
+                usCell.prepend(btn);
+            });
+        };
+
+        wrapper.addEventListener('click', (e) => {
+            const row = e.target.closest('tr.user-story-row');
+            if (!row) return;
+            table.querySelectorAll('tr.user-story-row.selected-us-row').forEach(r => r.classList.remove('selected-us-row'));
+            row.classList.add('selected-us-row');
+            const cells = row.querySelectorAll('td');
+            const keepCols = new Set();
+            cells.forEach((cell, idx) => {
+                if (idx > 0 && cell.classList.contains('linked-cell')) {
+                    keepCols.add(idx);
+                }
+            });
+            activeUsColumnFilter = keepCols;
+            applyColumnFilter();
+            renderFocusPanel(row);
+        });
+
+        clearBtn.addEventListener('click', () => {
+            activeUsColumnFilter = null;
+            table.querySelectorAll('tr.user-story-row.selected-us-row').forEach(r => r.classList.remove('selected-us-row'));
+            panel.classList.add('d-none');
+            applyColumnFilter();
+        });
+
+        const observer = new MutationObserver(() => {
+            ensureUsButtons();
+            if (activeUsColumnFilter) {
+                applyColumnFilter();
+            }
+        });
+        observer.observe(table.querySelector('tbody'), { childList: true, subtree: true });
+        ensureUsButtons();
+    }
+
+    function initializeMatrixScrolling() {
+        const wrapper = document.getElementById('matrixWrapper');
+        const topScroll = document.getElementById('matrixTopScroll');
+        const topInner = document.getElementById('matrixTopScrollInner');
+        if (!wrapper || !topScroll || !topInner) return;
+
+        const table = wrapper.querySelector('.traceability-table');
+        if (!table) return;
+
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let startScrollLeft = 0;
+        let startScrollTop = 0;
+        let syncLock = false;
+        let movedWhileDragging = false;
+        let rafScheduled = false;
+        let performanceModeEnabled = false;
+
+        const hasHorizontalOverflow = () => table.scrollWidth > wrapper.clientWidth + 2;
+        const hasVerticalOverflow = () => table.scrollHeight > wrapper.clientHeight + 2;
+        const matrixCellCount = () => {
+            const rows = Number(wrapper.dataset.totalRows || 0) || table.querySelectorAll('tbody tr.user-story-row').length;
+            const cols = table.querySelectorAll('thead th').length;
+            return rows * cols;
+        };
+
+        const scheduleViewportSync = () => {
+            if (rafScheduled) return;
+            rafScheduled = true;
+            requestAnimationFrame(() => {
+                rafScheduled = false;
+                if (syncLock) return;
+                syncLock = true;
+                topScroll.scrollLeft = wrapper.scrollLeft;
+                syncLock = false;
+            });
+        };
+
+        const updateTopScrollbar = () => {
+            const overflow = hasHorizontalOverflow();
+            const overflowAny = overflow || hasVerticalOverflow();
+            topScroll.classList.toggle('d-none', !overflow);
+            wrapper.classList.toggle('grab-enabled', overflowAny);
+            topInner.style.width = `${table.scrollWidth}px`;
+            if (!overflow) {
+                wrapper.classList.remove('dragging');
+            }
+        };
+
+        wrapper.addEventListener('scroll', scheduleViewportSync, { passive: true });
+
+        topScroll.addEventListener('scroll', () => {
+            if (syncLock) return;
+            syncLock = true;
+            wrapper.scrollLeft = topScroll.scrollLeft;
+            syncLock = false;
+        });
+
+        wrapper.addEventListener('wheel', (e) => {
+            if (!hasHorizontalOverflow()) return;
+            if (e.shiftKey || Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
+                e.preventDefault();
+                wrapper.scrollLeft += e.deltaY + e.deltaX;
+            }
+        }, { passive: false });
+
+        wrapper.addEventListener('pointerdown', (e) => {
+            if (!(hasHorizontalOverflow() || hasVerticalOverflow())) return;
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            if (e.target.closest('button, input, textarea, select, label, .btn')) return;
+            isDragging = true;
+            movedWhileDragging = false;
+            startX = e.clientX;
+            startY = e.clientY;
+            startScrollLeft = wrapper.scrollLeft;
+            startScrollTop = wrapper.scrollTop;
+            wrapper.classList.add('dragging');
+            wrapper.setPointerCapture?.(e.pointerId);
+        });
+
+        const stopDragging = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            wrapper.classList.remove('dragging');
+        };
+
+        wrapper.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            const walkX = e.clientX - startX;
+            const walkY = e.clientY - startY;
+            if (Math.abs(walkX) > 3 || Math.abs(walkY) > 3) {
+                movedWhileDragging = true;
+            }
+            wrapper.scrollLeft = startScrollLeft - walkX;
+            wrapper.scrollTop = startScrollTop - walkY;
+        });
+        wrapper.addEventListener('pointercancel', stopDragging);
+        wrapper.addEventListener('pointerup', stopDragging);
+        wrapper.addEventListener('lostpointercapture', stopDragging);
+
+        wrapper.addEventListener('click', (e) => {
+            if (movedWhileDragging) {
+                e.preventDefault();
+                e.stopPropagation();
+                movedWhileDragging = false;
+            }
+        }, true);
+
+        if (matrixCellCount() > 24000) {
+            performanceModeEnabled = true;
+            wrapper.classList.add('performance-mode');
+        }
+
+        updateTopScrollbar();
+        scheduleViewportSync();
+        window.addEventListener('resize', updateTopScrollbar);
+    }
+
+    async function runAiQualityAssessment(projectId, forceRefresh) {
+        const body = document.getElementById('aiQualityModalBody');
+        const loadingText = forceRefresh
+            ? 'ИИ пересчитывает оценку US/ТК...'
+            : 'Загружаем сохраненную AI-оценку модели...';
+        body.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <div class="mt-2 text-muted">${loadingText}</div>
+            </div>
+        `;
+        try {
+            const response = await fetch(`/api/projects/${projectId}/traceability-ai-quality`, {
+                method: forceRefresh ? 'POST' : 'GET',
+                headers: {'Content-Type': 'application/json'}
+            });
+            const data = await response.json();
+            if (!data.success) {
+                body.innerHTML = `
+                    <div class="alert alert-warning mb-0">
+                        ${data.message || 'Сохраненная AI-оценка не найдена.'}<br>
+                        <small>Нажмите «Перезапросить», чтобы получить новую оценку.</small>
+                    </div>
+                `;
+                return;
+            }
+            const text = (data.response || 'Ответ пуст');
+            const safeHtml = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\n/g, '<br>');
+            let reviewedAtBlock = '';
+            if (data.reviewedAt) {
+                reviewedAtBlock = `
+                    <div class="small text-muted mb-2">
+                        Последнее ревью: ${new Date(data.reviewedAt).toLocaleString('ru-RU', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: false
+                        })}
+                    </div>
+                `;
+            }
+            body.innerHTML = `
+                <div class="alert alert-success">${data.message || 'Оценка сформирована'}</div>
+                ${reviewedAtBlock}
+                <div class="border rounded p-3 bg-light" style="white-space: normal;">${safeHtml}</div>
+            `;
+        } catch (err) {
+            body.innerHTML = '<div class="alert alert-danger mb-0">Не удалось получить AI-оценку модели.</div>';
+        }
+    }
+
+    function buildPreviewHtml(tc) {
+        const tags = (tc.tags || []).length
+            ? tc.tags.map(tag => `<span class="badge me-1" style="background:${tag.color || '#6c757d'};color:#fff;">${tag.name}</span>`).join('')
+            : '<span class="tc-preview-muted">Теги отсутствуют</span>';
+        const userStories = (tc.userStories || []).length
+            ? tc.userStories.map(us => `<span class="badge bg-info me-1">${us.name}</span>`).join('')
+            : '<span class="tc-preview-muted">User Stories не привязаны</span>';
+        const steps = (tc.steps || []).length
+            ? tc.steps.map(step => `
+                <div><strong>${step.stepNumber}.</strong> ${step.action || ''}</div>
+                ${step.expectedResult ? `<div class="text-muted small mb-1">Ожидаемый: ${step.expectedResult}</div>` : ''}
+            `).join('')
+            : '<span class="tc-preview-muted">Шаги отсутствуют</span>';
+
+        return `
+            <div class="tc-preview-section">
+                <span class="badge bg-secondary me-1">${tc.status || 'DRAFT'}</span>
+                <span class="badge bg-warning text-dark">${tc.priority || 'MEDIUM'}</span>
+            </div>
+            <div class="tc-preview-section">
+                <strong>Предусловия:</strong><br>
+                ${tc.preconditions || '<span class="tc-preview-muted">Отсутствуют</span>'}
+            </div>
+            <div class="tc-preview-section">
+                <strong>Описание:</strong><br>
+                ${tc.description || '<span class="tc-preview-muted">Отсутствует</span>'}
+            </div>
+            <div class="tc-preview-section">
+                <strong>Шаги:</strong><br>
+                ${steps}
+            </div>
+            <div class="tc-preview-section">
+                <strong>Теги:</strong><br>
+                ${tags}
+            </div>
+            <div class="tc-preview-section">
+                <strong>User Stories:</strong><br>
+                ${userStories}
+            </div>
+        `;
+    }
+
+    function initializeMatrixPreviews() {
+        const wrapper = document.getElementById('matrixWrapper');
+        if (wrapper && wrapper.classList.contains('performance-mode')) {
+            return;
+        }
+        const instances = new WeakMap();
+        let activeElement = null;
+        let hideTimeoutId = null;
+
+        const ensurePopover = (el) => {
+            let popover = instances.get(el);
+            if (!popover) {
+                popover = new bootstrap.Popover(el, {
+                    html: true,
+                    trigger: 'manual',
+                    placement: 'auto',
+                    customClass: 'tc-preview-popover',
+                    content: 'Загрузка...'
+                });
+                instances.set(el, popover);
+            }
+            return popover;
+        };
+
+        const fillPopoverContent = async (el, popover) => {
+            const testCaseId = el.dataset.testCaseId;
+            if (!testCaseId) return;
+            if (matrixPreviewCache.has(testCaseId)) {
+                popover.setContent({
+                    '.popover-header': `TC-${testCaseId}`,
+                    '.popover-body': matrixPreviewCache.get(testCaseId)
+                });
+                return;
+            }
+            popover.setContent({
+                '.popover-header': `TC-${testCaseId}`,
+                '.popover-body': 'Загрузка деталей тест-кейса...'
+            });
+            try {
+                const response = await fetch(`/api/test-cases/${testCaseId}`);
+                const data = await response.json();
+                if (data.success && data.testCase) {
+                    const html = buildPreviewHtml(data.testCase);
+                    matrixPreviewCache.set(testCaseId, html);
+                    popover.setContent({
+                        '.popover-header': data.testCase.name || `TC-${testCaseId}`,
+                        '.popover-body': html
+                    });
+                } else {
+                    popover.setContent({
+                        '.popover-header': `TC-${testCaseId}`,
+                        '.popover-body': 'Не удалось загрузить детали тест-кейса.'
+                    });
+                }
+            } catch (_) {
+                popover.setContent({
+                    '.popover-header': `TC-${testCaseId}`,
+                    '.popover-body': 'Ошибка загрузки деталей тест-кейса.'
+                });
+            }
+        };
+
+        document.addEventListener('mouseover', async (e) => {
+            const el = e.target.closest('.rotated-link[data-bs-toggle="popover"]');
+            if (!el) return;
+            if (hideTimeoutId) {
+                clearTimeout(hideTimeoutId);
+                hideTimeoutId = null;
+            }
+            activeElement = el;
+            const popover = ensurePopover(el);
+            await fillPopoverContent(el, popover);
+            if (activeElement === el) {
+                popover.show();
+            }
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            const el = e.target.closest('.rotated-link[data-bs-toggle="popover"]');
+            if (!el) return;
+            const popover = instances.get(el);
+            if (!popover) return;
+            hideTimeoutId = setTimeout(() => {
+                popover.hide();
+                if (activeElement === el) activeElement = null;
+            }, 80);
+        });
+    }
+
+    function updateBackButtonLink(projectId) {
+        const userRole = document.body.dataset.userRole;
+        const backButton = document.getElementById('backToProjectBtn');
+
+        if (userRole === 'ANALYST') {
+            backButton.href = `/projects/${projectId}`;
+        } else if (userRole === 'TESTER') {
+            backButton.href = `/project-qa/${projectId}`;
+        } else {
+            backButton.href = `/projects/${projectId}`;
+        }
+    }
+
+    function loadProjectTags(projectId) {
+        fetch(`/api/projects/${projectId}/tags`)
+            .then(r => r.json())
+            .then(tags => availableTags = tags)
+            .catch(err => console.error('Ошибка загрузки тегов:', err));
+    }
+
+    function openTestCaseModal(testCaseId) {
+        const modal = new bootstrap.Modal(document.getElementById('testCaseDetailModal'));
+        const content = document.getElementById('modalTestCaseContent');
+        content.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+
+        fetch(`/api/test-cases/${testCaseId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.testCase) {
+                    currentTestCaseData = data.testCase;
+                    isEditingInModal = false;
+                    displayTestCaseInModal(data.testCase);
+                    document.getElementById('editInModalBtn').classList.remove('d-none');
+                    document.getElementById('editInModalBtn').textContent = 'Редактировать';
+                    modal.show();
+                } else {
+                    content.innerHTML = '<div class="alert alert-danger">Не удалось загрузить данные.</div>';
+                }
+            })
+            .catch(err => {
+                content.innerHTML = `<div class="alert alert-danger">Ошибка: ${err.message}</div>`;
+            });
+    }
+
+    function displayTestCaseInModal(testCase) {
+        document.getElementById('modalTestCaseTitle').innerHTML = `<i class="fas fa-vial me-2"></i>${testCase.name}`;
+
+        const tagsHtml = testCase.tags?.length
+            ? testCase.tags.map(t => `<span class="badge" style="background:${t.color};color:white">${t.name}</span>`).join(' ')
+            : '<em>Теги отсутствуют</em>';
+
+        const stepsHtml = testCase.steps?.length
+            ? testCase.steps.map(s => `
+                <div class="mb-2">
+                    <strong>${s.stepNumber}.</strong> ${s.action}
+                    ${s.expectedResult ? `<br><small class="text-muted">Ожидаемый: ${s.expectedResult}</small>` : ''}
+                </div>
+            `).join('')
+            : '<em>Шаги отсутствуют</em>';
+
+        // ✅ ИСПРАВЛЕНО: User Stories в контейнере с переносом (в режиме просмотра)
+        const usHtml = testCase.userStories?.length
+            ? `<div class="user-stories-container">${testCase.userStories.map(us => `<span class="badge bg-info">${us.name}</span>`).join('')}</div>`
+            : '<em>User Stories не привязаны</em>';
+
+        let commentsHtml = '';
+        if (testCase.comments && testCase.comments.length > 0) {
+            const sortedComments = sortComments([...testCase.comments], currentCommentSort);
+            commentsHtml = sortedComments.map(comment => generateCommentHtml(comment)).join('');
+        } else {
+            commentsHtml = '<em class="text-muted">Комментарии отсутствуют</em>';
+        }
+
+        document.getElementById('modalTestCaseContent').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Статус:</strong> <span class="badge bg-secondary">${testCase.status}</span></p>
+                    <p><strong>Приоритет:</strong> <span class="badge bg-warning text-dark">${testCase.priority}</span></p>
+                    <p><strong>Создан:</strong> ${new Date(testCase.createdAt).toLocaleString('ru-RU')}</p>
+                    <p><strong>Обновлён:</strong> ${new Date(testCase.updatedAt).toLocaleString('ru-RU')}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Теги:</strong><br>${tagsHtml}</p>
+                </div>
+                <div class="col-12 mt-3">
+                    <h6><i class="fas fa-list-check me-2"></i>Предусловия</h6>
+                    <p>${testCase.preconditions || '<em>Отсутствуют</em>'}</p>
+                </div>
+                <div class="col-12">
+                    <h6><i class="fas fa-align-left me-2"></i>Описание</h6>
+                    <p>${testCase.description || '<em>Отсутствует</em>'}</p>
+                </div>
+                <div class="col-12">
+                    <h6><i class="fas fa-list-ol me-2"></i>Шаги</h6>
+                    <div>${stepsHtml}</div>
+                </div>
+                <div class="col-12">
+                    <h6><i class="fas fa-book me-2"></i>Связанные User Stories</h6>
+                    <div>${usHtml}</div>
+                </div>
+                <div class="col-12">
+                    <div class="comments-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-comments me-2 text-warning"></i>
+                            Комментарии
+                        </h6>
+                        <div class="sort-dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="commentSortDropdownModal" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-sort me-1"></i>
+                                ${currentCommentSort === 'desc' ? 'Новые сверху' : 'Старые сверху'}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="commentSortDropdownModal">
+                                <li>
+                                    <a class="dropdown-item sort-option ${currentCommentSort === 'desc' ? 'active' : ''}" href="#" data-sort="desc">
+                                        Новые сверху
+                                        ${currentCommentSort === 'desc' ? '<i class="fas fa-check check-icon"></i>' : ''}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item sort-option ${currentCommentSort === 'asc' ? 'active' : ''}" href="#" data-sort="asc">
+                                        Старые сверху
+                                        ${currentCommentSort === 'asc' ? '<i class="fas fa-check check-icon"></i>' : ''}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="border rounded p-3">
+                        <div class="comment-input-group">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="newCommentInput" placeholder="Добавить комментарий...">
+                                <button class="btn btn-outline-primary" type="button" id="addCommentBtn">Добавить</button>
+                            </div>
+                        </div>
+                        <div id="commentsList">
+                            ${commentsHtml}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        initializeCommentHandlers();
+        initializeCommentSortHandlersInModal();
+    }
+
+    function sortComments(comments, sortOrder) {
+        return comments.sort((a, b) => {
+            const dateA = new Date(a.createdAt);
+            const dateB = new Date(b.createdAt);
+            return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+        });
+    }
+
+    function initializeCommentSortHandlersInModal() {
+        document.querySelectorAll('#testCaseDetailModal .sort-option').forEach(option => {
+            option.addEventListener('click', function (e) {
+                e.preventDefault();
+                const sortValue = this.dataset.sort;
+                if (sortValue !== currentCommentSort) {
+                    currentCommentSort = sortValue;
+                    if (currentTestCaseData) {
+                        displayTestCaseInModal(currentTestCaseData);
+                    }
+                }
+            });
+        });
+    }
+
+    function generateCommentHtml(comment) {
+        const isAI = comment.commentType === 'AI_GENERATED';
+        const authorName = comment.userFullName || comment.userUsername || 'Неизвестный пользователь';
+        const canEdit = canEditCommentAction(comment);
+        const isEdited = comment.updatedAt && comment.updatedAt !== comment.createdAt;
+        const editInfo = isEdited ? ` <i class="fas fa-edit text-muted" title="Отредактировано: ${new Date(comment.updatedAt).toLocaleString('ru-RU')}"></i>` : '';
+        return `
+            <div class="comment-card ${isAI ? 'ai-comment' : ''}" data-comment-id="${comment.id}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="user-avatar me-2">
+                                <i class="fas ${isAI ? 'fa-robot text-info' : 'fa-user-circle text-primary'}"></i>
+                            </div>
+                            <div>
+                                <strong class="d-block">${authorName}</strong>
+                                <small class="text-muted">
+                                    ${new Date(comment.createdAt).toLocaleString('ru-RU')}
+                                    ${editInfo}
+                                </small>
+                                ${isAI ? `<span class="badge bg-info ms-2">AI</span>` : ''}
+                            </div>
+                        </div>
+                        <p class="mb-1 comment-content">${comment.content}</p>
+                    </div>
+                    <div class="comment-actions">
+                        ${!isAI && canEdit ? `
+                            <button class="btn btn-sm btn-outline-primary edit-comment-btn" title="Редактировать">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-comment-btn" title="Удалить">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function initializeCommentHandlers() {
+        document.getElementById('addCommentBtn').addEventListener('click', addComment);
+        document.querySelectorAll('.edit-comment-btn').forEach(btn => btn.addEventListener('click', openEditCommentModal));
+        document.querySelectorAll('.delete-comment-btn').forEach(btn => btn.addEventListener('click', deleteComment));
+        document.getElementById('newCommentInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                addComment();
+            }
+        });
+    }
+
+    function addComment() {
+        const content = document.getElementById('newCommentInput').value.trim();
+        if (!content) {
+            showMessage('Содержание комментария не может быть пустым!', 'warning');
+            return;
+        }
+        const testCaseId = currentTestCaseData.id;
+
+        fetch('/api/comments', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({testCaseId, content})
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    return fetch(`/api/test-cases/${testCaseId}`).then(res => res.json());
+                } else {
+                    throw new Error(data.message);
+                }
+            })
+            .then(testCaseResponse => {
+                if (testCaseResponse.success && testCaseResponse.testCase) {
+                    currentTestCaseData = testCaseResponse.testCase;
+                    displayTestCaseInModal(currentTestCaseData);
+                    document.getElementById('newCommentInput').value = '';
+                    showMessage('Комментарий добавлен!', 'success');
+                } else {
+                    throw new Error(testCaseResponse.message || 'Не удалось загрузить тест-кейс');
+                }
+            })
+            .catch(err => {
+                console.error('Ошибка добавления комментария:', err);
+                showMessage('Ошибка: ' + (err.message || 'Неизвестная ошибка'), 'danger');
+            });
+    }
+
+    function openEditCommentModal(e) {
+        const commentCard = e.target.closest('.comment-card');
+        const commentId = parseInt(commentCard.dataset.commentId);
+        const comment = currentTestCaseData.comments.find(c => c.id === commentId);
+        if (comment) {
+            const newContent = prompt('Редактировать комментарий:', comment.content);
+            if (newContent !== null && newContent.trim() !== '') {
+                updateComment(commentId, newContent.trim());
+            }
+        }
+    }
+
+    function updateComment(commentId, content) {
+        const testCaseId = currentTestCaseData.id;
+        fetch(`/api/comments/${commentId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content})
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    return fetch(`/api/test-cases/${testCaseId}`).then(r => r.json());
+                } else {
+                    throw new Error(data.message);
+                }
+            })
+            .then(testCaseResponse => {
+                if (testCaseResponse.success && testCaseResponse.testCase) {
+                    currentTestCaseData = testCaseResponse.testCase;
+                    displayTestCaseInModal(currentTestCaseData);
+                    showMessage('Комментарий обновлён!', 'success');
+                } else {
+                    throw new Error(testCaseResponse.message || 'Не удалось загрузить тест-кейс');
+                }
+            })
+            .catch(err => {
+                console.error('Ошибка обновления комментария:', err);
+                showMessage('Ошибка: ' + (err.message || 'Неизвестная ошибка'), 'danger');
+            });
+    }
+
+    function deleteComment(e) {
+        const commentCard = e.target.closest('.comment-card');
+        const commentId = parseInt(commentCard.dataset.commentId);
+        const testCaseId = currentTestCaseData.id;
+
+        if (confirm('Вы уверены, что хотите удалить этот комментарий?')) {
+            fetch(`/api/comments/${commentId}`, {method: 'DELETE'})
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        return fetch(`/api/test-cases/${testCaseId}`).then(r => r.json());
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .then(testCaseResponse => {
+                    if (testCaseResponse.success && testCaseResponse.testCase) {
+                        currentTestCaseData = testCaseResponse.testCase;
+                        displayTestCaseInModal(currentTestCaseData);
+                        showMessage('Комментарий удалён!', 'success');
+                    } else {
+                        throw new Error(testCaseResponse.message || 'Не удалось загрузить тест-кейс');
+                    }
+                })
+                .catch(err => {
+                    console.error('Ошибка удаления комментария:', err);
+                    showMessage('Ошибка: ' + (err.message || 'Неизвестная ошибка'), 'danger');
+                });
+        }
+    }
+
+    document.getElementById('editInModalBtn').addEventListener('click', function (e) {
+        e.preventDefault();
+        if (isEditingInModal) {
+            saveTestCaseFromModal();
+        } else {
+            if (currentTestCaseData) {
+                enableEditModeInModal(currentTestCaseData);
+                isEditingInModal = true;
+                this.textContent = 'Сохранить';
+            }
+        }
+    });
+
+    function enableEditModeInModal(testCase) {
+        const currentTagIds = new Set((testCase.tags || []).map(t => t.id));
+        const tagsHtml = availableTags.map(t => `
+            <div class="form-check">
+                <input class="form-check-input tag-checkbox" type="checkbox" id="tag-${t.id}" value="${t.id}" ${currentTagIds.has(t.id) ? 'checked' : ''}>
+                <label class="form-check-label" for="tag-${t.id}">
+                    <span class="badge" style="background:${t.color};color:white">${t.name}</span>
+                </label>
+            </div>
+        `).join('');
+
+        const currentUserStoryIds = new Set((testCase.userStories || []).map(us => us.id));
+        // ✅ ИСПРАВЛЕНО: User Stories в режиме редактирования тоже в контейнере
+        const usHtml = testCase.userStories?.length
+            ? `<div class="user-stories-container">${testCase.userStories.map(us => `<span class="badge bg-info">${us.name}</span>`).join('')}</div>`
+            : '<em>User Stories не привязаны</em>';
+
+        let commentsHtml = '';
+        if (testCase.comments && testCase.comments.length > 0) {
+            const sortedComments = sortComments([...testCase.comments], currentCommentSort);
+            commentsHtml = sortedComments.map(comment => generateCommentHtml(comment)).join('');
+        } else {
+            commentsHtml = '<em class="text-muted">Комментарии отсутствуют</em>';
+        }
+
+        document.getElementById('modalTestCaseContent').innerHTML = `
+            <div class="mb-3">
+                <label class="form-label">Название *</label>
+                <input type="text" class="form-control" id="editName" value="${testCase.name}" required>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Статус</label>
+                    <select class="form-select" id="editStatus">
+                        <option value="DRAFT" ${testCase.status === 'DRAFT' ? 'selected' : ''}>Draft</option>
+                        <option value="REVIEW" ${testCase.status === 'REVIEW' ? 'selected' : ''}>Review</option>
+                        <option value="ACTIVE" ${testCase.status === 'ACTIVE' ? 'selected' : ''}>Active</option>
+                        <option value="ARCHIVE" ${testCase.status === 'ARCHIVE' ? 'selected' : ''}>Archive</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Приоритет</label>
+                    <select class="form-select" id="editPriority">
+                        <option value="LOW" ${testCase.priority === 'LOW' ? 'selected' : ''}>Low</option>
+                        <option value="MEDIUM" ${testCase.priority === 'MEDIUM' ? 'selected' : ''}>Medium</option>
+                        <option value="HIGH" ${testCase.priority === 'HIGH' ? 'selected' : ''}>High</option>
+                        <option value="CRITICAL" ${testCase.priority === 'CRITICAL' ? 'selected' : ''}>Critical</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Теги</label>
+                <div>${tagsHtml || '<em>Теги не найдены</em>'}</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Предусловия</label>
+                <textarea class="form-control" id="editPreconditions" rows="2">${testCase.preconditions || ''}</textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Описание</label>
+                <textarea class="form-control" id="editDescription" rows="3">${testCase.description || ''}</textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Связанные User Stories</label>
+                <div>${usHtml}</div>
+            </div>
+            <div class="mb-3">
+                <div class="comments-header">
+                    <label class="form-label mb-0"><strong>Комментарии</strong></label>
+                    <div class="sort-dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="commentSortDropdownModalEdit" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-sort me-1"></i>
+                            ${currentCommentSort === 'desc' ? 'Новые сверху' : 'Старые сверху'}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="commentSortDropdownModalEdit">
+                            <li>
+                                <a class="dropdown-item sort-option ${currentCommentSort === 'desc' ? 'active' : ''}" href="#" data-sort="desc">
+                                    Новые сверху
+                                    ${currentCommentSort === 'desc' ? '<i class="fas fa-check check-icon"></i>' : ''}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item sort-option ${currentCommentSort === 'asc' ? 'active' : ''}" href="#" data-sort="asc">
+                                    Старые сверху
+                                    ${currentCommentSort === 'asc' ? '<i class="fas fa-check check-icon"></i>' : ''}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="border rounded p-3">
+                    <div class="comment-input-group">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="newCommentInput" placeholder="Добавить комментарий...">
+                            <button class="btn btn-outline-primary" type="button" id="addCommentBtn">Добавить</button>
+                        </div>
+                    </div>
+                    <div id="commentsList">
+                        ${commentsHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        initializeCommentHandlers();
+        initializeCommentSortHandlersInModal();
+    }
+
+    function saveTestCaseFromModal() {
+        const testCaseId = currentTestCaseData.id;
+        const updated = {
+            name: document.getElementById('editName').value.trim(),
+            description: document.getElementById('editDescription').value,
+            preconditions: document.getElementById('editPreconditions').value,
+            status: document.getElementById('editStatus').value,
+            priority: document.getElementById('editPriority').value
+        };
+
+        if (!updated.name) {
+            alert('Название не может быть пустым');
+            return;
+        }
+
+        fetch(`/api/test-cases/${testCaseId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(updated)
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    return saveTestCaseTags(testCaseId)
+                        .then(() => saveTestCaseUserStories(testCaseId))
+                        .then(() => fetch(`/api/test-cases/${testCaseId}`).then(r => r.json()));
+                } else {
+                    throw new Error(data.message);
+                }
+            })
+            .then(finalData => {
+                if (finalData.success) {
+                    currentTestCaseData = finalData.testCase;
+                    displayTestCaseInModal(finalData.testCase);
+                    isEditingInModal = false;
+                    document.getElementById('editInModalBtn').textContent = 'Редактировать';
+                    showMessage('Сохранено!', 'success');
+                }
+            })
+            .catch(err => {
+                console.error('Ошибка:', err);
+                showMessage('Ошибка: ' + err.message, 'danger');
+            });
+    }
+
+    function saveTestCaseTags(testCaseId) {
+        return new Promise((resolve, reject) => {
+            const selected = Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(cb => +cb.value);
+            fetch(`/api/test-cases/${testCaseId}`)
+                .then(r => r.json())
+                .then(data => {
+                    const current = (data.testCase.tags || []).map(t => t.id);
+                    const toAdd = selected.filter(id => !current.includes(id));
+                    const toRemove = current.filter(id => !selected.includes(id));
+
+                    const delPromises = toRemove.map(id => fetch(`/api/test-cases/${testCaseId}/tags/${id}`, {method: 'DELETE'}));
+                    return Promise.all(delPromises)
+                        .then(() => Promise.all(toAdd.map(id => fetch(`/api/test-cases/${testCaseId}/tags/${id}`, {method: 'POST'}))))
+                        .then(resolve);
+                })
+                .catch(reject);
+        });
+    }
+
+    function saveTestCaseUserStories(testCaseId) {
+        return new Promise((resolve, reject) => {
+            const selected = Array.from(document.querySelectorAll('.us-checkbox:checked')).map(cb => +cb.value);
+            fetch(`/api/test-cases/${testCaseId}`)
+                .then(r => r.json())
+                .then(data => {
+                    const current = (data.testCase.userStories || []).map(us => us.id);
+                    const toAdd = selected.filter(id => !current.includes(id));
+                    const toRemove = current.filter(id => !selected.includes(id));
+
+                    const delPromises = toRemove.map(id => fetch(`/api/test-cases/${testCaseId}/user-stories/${id}`, {method: 'DELETE'}));
+                    return Promise.all(delPromises)
+                        .then(() => Promise.all(toAdd.map(id => fetch(`/api/test-cases/${testCaseId}/user-stories/${id}`, {method: 'POST'}))))
+                        .then(resolve);
+                })
+                .catch(reject);
+        });
+    }
+
+    function showMessage(message, type) {
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} position-fixed`;
+        alert.style = 'top: 20px; right: 20px; z-index: 10000; min-width: 300px;';
+        alert.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        document.body.appendChild(alert);
+        setTimeout(() => alert.remove(), 5000);
+    }
+</script>
+</body>
+</html>

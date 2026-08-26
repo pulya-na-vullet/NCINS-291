@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ project.name }} - Тест-раны</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .test-run-card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            overflow: hidden;
+        }
+        .test-run-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .test-run-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .status-badge {
+            font-size: 0.8rem;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+        .btn-white {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+            color: #495057;
+        }
+        .btn-white:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .btn-outline-danger {
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 1.5rem 2rem;
+        }
+        .modal-header .btn-close {
+            filter: invert(1);
+        }
+        .form-control {
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+            transform: translateY(-1px);
+        }
+        .checkbox-container {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1rem;
+            background-color: #f8f9fa;
+        }
+        .form-check {
+            margin-bottom: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: white;
+            border: 1px solid #e9ecef;
+        }
+        .form-check:hover {
+            background-color: #f8f9fa;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+        .form-check-input:checked {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+        .selected-count {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+        .alert-info {
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border-left: 4px solid #667eea;
+        }
+        h1 {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .card-title a {
+            color: #2c3e50;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .card-title a:hover {
+            color: #667eea;
+        }
+        .text-muted {
+            color: #6c757d !important;
+        }
+        .input-group .form-control {
+            border-radius: 12px 0 0 12px;
+        }
+        .input-group .btn {
+            border-radius: 0 12px 12px 0;
+        }
+        #emptyTestRuns {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 3rem;
+            margin: 2rem 0;
+        }
+        .badge {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .bg-success { background: linear-gradient(135deg, #28a745, #20c997) !important; }
+        .bg-warning { background: linear-gradient(135deg, #ffc107, #fd7e14) !important; }
+        .bg-secondary { background: linear-gradient(135deg, #6c757d, #495057) !important; }
+        .bg-danger { background: linear-gradient(135deg, #dc3545, #e83e8c) !important; }
+        .bg-info { background: linear-gradient(135deg, #17a2b8, #6f42c1) !important; }
+        .progress {
+            height: 8px;
+            border-radius: 10px;
+        }
+        .stats-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-left: 4px solid #667eea;
+        }
+        .stat-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .stat-badge {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        .current-test-cases-list {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+            margin-bottom: 1rem;
+        }
+        .test-case-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .test-case-item:last-child {
+            border-bottom: none;
+        }
+        .tab-content {
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 0.375rem 0.375rem;
+            padding: 1rem;
+        }
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+        .nav-tabs .nav-link {
+            color: #495057;
+            border: 1px solid #dee2e6;
+            border-bottom: none;
+            margin-right: 0.25rem;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .search-empty-state {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 3rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+        .test-case-status {
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+        .test-case-search-input {
+            border-radius: 10px;
+            border: 1px solid #dcdfe6;
+        }
+        .test-case-tag {
+            font-size: 0.7rem;
+            margin-left: 0.35rem;
+            border: 1px solid #d4d9e2;
+            color: #4d5663;
+            background: #f2f5fb;
+        }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <!-- Навигация -->
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <a href="/project-qa/{{ project.id }}" class="btn btn-white me-2">
+                    <i class="fas fa-arrow-left me-2"></i>Назад к проекту
+                </a>
+                <a href="/project-qa" class="btn btn-white">
+                    <i class="fas fa-list me-2"></i>Все проекты
+                </a>
+            </div>
+            <form action="/logout" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-sign-out-alt me-1"></i> Выйти
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Заголовок -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>
+                    <i class="fas fa-play-circle me-3 text-info"></i>
+                    Тест-раны проекта: <span>{{ project.name }}</span>
+                </h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTestRunModal">
+                    <i class="fas fa-plus me-2"></i>Создать тест-ран
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Поиск и фильтры -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="input-group">
+                <input type="text" class="form-control" id="searchInput" placeholder="Поиск тест-ранов...">
+                <button class="btn btn-outline-secondary" type="button" id="searchButton">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список тест-ранов -->
+    <div class="row">
+        <div class="col-12">
+            <div id="testRunsList">
+                <div id="emptyTestRuns" class="text-center py-5 d-none">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">Тест-раны не найдены</h4>
+                    <p class="text-muted">Создайте первый тест-ран с помощью кнопки выше</p>
+                </div>
+
+                <div id="searchResultsContainer">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="projectData" data-project-id="{{ project.id }}" style="display:none;"></div>
+
+<!-- Модальное окно создания тест-рана -->
+<div class="modal fade" id="createTestRunModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Создать тест-ран
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createTestRunForm">
+                    <div class="mb-3">
+                        <label class="form-label">Заголовок *</label>
+                        <input type="text" class="form-control" id="testRunTitle" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea class="form-control" id="testRunDescription" rows="3"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">ФИО исполнителя *</label>
+                                <input type="text" class="form-control" id="testRunExecutor" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Создатель тест-рана *</label>
+                                <input type="text" class="form-control" id="testRunCreator" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Добавить тест-кейсы:</label>
+                        <div class="input-group mb-2">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input
+                                type="text"
+                                class="form-control test-case-search-input"
+                                id="testCaseSearchInput"
+                                placeholder="Поиск ТК по названию или тегу (например: smoke, regression)"
+                            >
+                            <button class="btn btn-outline-secondary" type="button" id="clearTestCaseSearchBtn">
+                                Очистить
+                            </button>
+                        </div>
+                        <div class="checkbox-container" id="testCasesCheckboxes">
+                            <div class="text-center py-3">
+                                <div class="loading-spinner"></div>
+                                <span class="ms-2">Загрузка тест-кейсов...</span>
+                            </div>
+                        </div>
+                        <div class="selected-count" id="testCasesCount">Выбрано: 0 тест-кейсов</div>
+                        <small class="form-text text-muted">Выберите отдельные тест-кейсы для добавления в тест-ран</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Или добавить тест-сьюты:</label>
+                        <div class="checkbox-container" id="testSuitesCheckboxes">
+                            <div class="text-center py-3">
+                                <div class="loading-spinner"></div>
+                                <span class="ms-2">Загрузка тест-сьютов...</span>
+                            </div>
+                        </div>
+                        <div class="selected-count" id="testSuitesCount">Выбрано: 0 тест-сьютов</div>
+                        <small class="form-text text-muted">Выберите тест-сьюты для добавления всех их тест-кейсов в тест-ран</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Итоговый список тест-кейсов:</strong>
+                            <div id="finalTestCaseList" class="mt-2">
+                                Будут добавлены все уникальные тест-кейсы из выбранных источников
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="createTestRunBtn">
+                    <i class="fas fa-plus me-2"></i>Создать
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно редактирования тест-рана -->
+<div class="modal fade" id="editTestRunModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Редактировать тест-ран
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editTestRunForm">
+                    <input type="hidden" id="editTestRunId">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Заголовок *</label>
+                                <input type="text" class="form-control" id="editTestRunTitle" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Статус</label>
+                                <select class="form-control" id="editTestRunStatus">
+                                    <option value="NOT_STARTED">Не начат</option>
+                                    <option value="IN_PROGRESS">В процессе</option>
+                                    <option value="COMPLETED">Завершен</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea class="form-control" id="editTestRunDescription" rows="3"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">ФИО исполнителя *</label>
+                                <input type="text" class="form-control" id="editTestRunExecutor" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Создатель тест-рана *</label>
+                                <input type="text" class="form-control" id="editTestRunCreator" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Текущий состав тест-рана -->
+                    <div class="mb-4">
+                        <h6 class="border-bottom pb-2">Текущий состав тест-рана</h6>
+                        <div class="current-test-cases-list" id="currentTestCasesList">
+                            <div class="text-center py-3">
+                                <div class="loading-spinner"></div>
+                                <span class="ms-2">Загрузка тест-кейсов...</span>
+                            </div>
+                        </div>
+                        <small class="text-muted">Всего тест-кейсов: <span id="currentTestCasesCount">0</span></small>
+                    </div>
+
+                    <!-- Табы для управления составом -->
+                    <ul class="nav nav-tabs" id="editTestRunTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="add-test-cases-tab" data-bs-toggle="tab"
+                                    data-bs-target="#add-test-cases" type="button" role="tab">
+                                <i class="fas fa-plus me-1"></i>Добавить тест-кейсы
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="add-test-suites-tab" data-bs-toggle="tab"
+                                    data-bs-target="#add-test-suites" type="button" role="tab">
+                                <i class="fas fa-folder-plus me-1"></i>Добавить тест-сьюты
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="remove-test-cases-tab" data-bs-toggle="tab"
+                                    data-bs-target="#remove-test-cases" type="button" role="tab">
+                                <i class="fas fa-minus me-1"></i>Удалить тест-кейсы
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="editTestRunTabContent">
+                        <!-- Вкладка добавления тест-кейсов -->
+                        <div class="tab-pane fade show active" id="add-test-cases" role="tabpanel">
+                            <div class="mb-3">
+                                <label class="form-label">Выберите тест-кейсы для добавления:</label>
+                                <div class="checkbox-container" id="editTestCasesCheckboxes">
+                                    <div class="text-center py-3">
+                                        <div class="loading-spinner"></div>
+                                        <span class="ms-2">Загрузка доступных тест-кейсов...</span>
+                                    </div>
+                                </div>
+                                <div class="selected-count" id="editTestCasesCount">Выбрано: 0 тест-кейсов</div>
+                            </div>
+                        </div>
+
+                        <!-- Вкладка добавления тест-сьютов -->
+                        <div class="tab-pane fade" id="add-test-suites" role="tabpanel">
+                            <div class="mb-3">
+                                <label class="form-label">Выберите тест-сьюты для добавления:</label>
+                                <div class="checkbox-container" id="editTestSuitesCheckboxes">
+                                    <div class="text-center py-3">
+                                        <div class="loading-spinner"></div>
+                                        <span class="ms-2">Загрузка тест-сьютов...</span>
+                                    </div>
+                                </div>
+                                <div class="selected-count" id="editTestSuitesCount">Выбрано: 0 тест-сьютов</div>
+                                <small class="form-text text-muted">Будут добавлены все тест-кейсы из выбранных тест-сьютов</small>
+                            </div>
+                        </div>
+
+                        <!-- Вкладка удаления тест-кейсов -->
+                        <div class="tab-pane fade" id="remove-test-cases" role="tabpanel">
+                            <div class="mb-3">
+                                <label class="form-label">Выберите тест-кейсы для удаления:</label>
+                                <div class="checkbox-container" id="removeTestCasesCheckboxes">
+                                    <div class="text-center py-3">
+                                        <div class="loading-spinner"></div>
+                                        <span class="ms-2">Загрузка тест-кейсов для удаления...</span>
+                                    </div>
+                                </div>
+                                <div class="selected-count" id="removeTestCasesCount">Выбрано: 0 тест-кейсов</div>
+                                <div class="alert alert-warning mt-2">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Внимание: При удалении тест-кейсов будут потеряны результаты их выполнения в этом тест-ране.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 mt-3">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Итоговый список тест-кейсов после изменений:</strong>
+                            <div id="editFinalTestCaseList" class="mt-2">
+                                Изменения отобразятся после выбора тест-кейсов
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="updateTestRunBtn">
+                    <i class="fas fa-save me-2"></i>Сохранить изменения
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно удаления -->
+<div class="modal fade" id="deleteTestRunModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Подтверждение удаления
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить тест-ран "<span id="deleteTestRunTitle"></span>"?</p>
+                <p class="text-muted">Это действие нельзя отменить.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteTestRunBtn">
+                    <i class="fas fa-trash me-2"></i>Удалить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let currentProjectId = null;
+    let currentDeleteTestRunId = null;
+    let currentEditTestRunId = null;
+    let allTestCases = [];
+    let allTestSuites = [];
+    let currentTestRunTestCases = [];
+    let selectedCreateTestCaseIds = new Set();
+
+    // Объект для отображения статусов
+    const statusDisplayNames = {
+        'NOT_RUN': 'Не выполнен',
+        'PASSED': 'Успешно',
+        'FAILED': 'Провален',
+        'SKIPPED': 'Пропущен'
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        currentProjectId = resolveProjectId();
+        if (!currentProjectId) {
+            showLoadError('testCasesCheckboxes', 'Не удалось определить проект для загрузки тест-кейсов.');
+            showLoadError('testSuitesCheckboxes', 'Не удалось определить проект для загрузки тест-сьютов.');
+            return;
+        }
+
+        loadTestRuns();
+        loadTestCasesAndSuites();
+
+        document.getElementById('searchButton').addEventListener('click', searchTestRuns);
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchTestRuns();
+        });
+
+        document.getElementById('createTestRunBtn').addEventListener('click', createTestRun);
+        document.getElementById('updateTestRunBtn').addEventListener('click', updateTestRun);
+        document.getElementById('confirmDeleteTestRunBtn').addEventListener('click', deleteTestRun);
+        document.getElementById('createTestRunModal').addEventListener('hidden.bs.modal', resetCreateTestRunForm);
+        document.getElementById('testCaseSearchInput').addEventListener('input', function() {
+            renderCreateTestCaseCheckboxes(this.value || '');
+        });
+        document.getElementById('clearTestCaseSearchBtn').addEventListener('click', function() {
+            const searchInput = document.getElementById('testCaseSearchInput');
+            searchInput.value = '';
+            renderCreateTestCaseCheckboxes('');
+        });
+
+        // Добавляем обработчики удаления и редактирования для существующих тест-ранов
+        document.querySelectorAll('.delete-test-run-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                currentDeleteTestRunId = this.getAttribute('data-id');
+                document.getElementById('deleteTestRunTitle').textContent = this.getAttribute('data-title');
+                new bootstrap.Modal(document.getElementById('deleteTestRunModal')).show();
+            });
+        });
+
+        document.querySelectorAll('.edit-test-run-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                currentEditTestRunId = this.getAttribute('data-id');
+                document.getElementById('editTestRunId').value = currentEditTestRunId;
+                document.getElementById('editTestRunTitle').value = this.getAttribute('data-title');
+                document.getElementById('editTestRunDescription').value = this.getAttribute('data-description') || '';
+                document.getElementById('editTestRunExecutor').value = this.getAttribute('data-executor');
+                document.getElementById('editTestRunCreator').value = this.getAttribute('data-creator');
+
+                // Загружаем данные тест-рана для редактирования
+                loadTestRunForEdit(currentEditTestRunId);
+                new bootstrap.Modal(document.getElementById('editTestRunModal')).show();
+            });
+        });
+    });
+
+    function resolveProjectId() {
+        const projectData = document.getElementById('projectData');
+        const fromDataAttr = projectData?.dataset?.projectId;
+        const parsedFromData = Number(fromDataAttr);
+        if (Number.isInteger(parsedFromData) && parsedFromData > 0) {
+            return parsedFromData;
+        }
+
+        const match = window.location.pathname.match(/\/(?:project|project-qa)\/(\d+)\/test-runs/);
+        if (match) {
+            const parsedFromPath = Number(match[1]);
+            if (Number.isInteger(parsedFromPath) && parsedFromPath > 0) {
+                return parsedFromPath;
+            }
+        }
+        return null;
+    }
+
+    function showLoadError(containerId, message) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = `<div class="alert alert-danger">${message}</div>`;
+    }
+
+    function resetCreateTestRunForm() {
+        const form = document.getElementById('createTestRunForm');
+        if (form) {
+            form.reset();
+        }
+
+        selectedCreateTestCaseIds = new Set();
+        document.querySelectorAll('.test-suite-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        renderCreateTestCaseCheckboxes('');
+
+        document.getElementById('testCasesCount').textContent = 'Выбрано: 0 тест-кейсов';
+        document.getElementById('testSuitesCount').textContent = 'Выбрано: 0 тест-сьютов';
+        document.getElementById('finalTestCaseList').innerHTML =
+            'Будут добавлены все уникальные тест-кейсы из выбранных источников';
+    }
+
+    function searchTestRuns() {
+        const term = document.getElementById('searchInput').value.trim();
+        const searchButton = document.getElementById('searchButton');
+        const originalContent = searchButton.innerHTML;
+
+        // Показываем индикатор загрузки
+        searchButton.innerHTML = '<div class="loading-spinner me-2"></div>Поиск...';
+        searchButton.disabled = true;
+
+        fetch(`/api/projects/${currentProjectId}/test-runs/search?term=${encodeURIComponent(term)}`)
+            .then(r => {
+                if (!r.ok) throw new Error('Network response was not ok');
+                return r.json();
+            })
+            .then(testRuns => {
+                displaySearchResults(testRuns, term);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка поиска: ' + error.message);
+            })
+            .finally(() => {
+                // Восстанавливаем кнопку
+                searchButton.innerHTML = originalContent;
+                searchButton.disabled = false;
+            });
+    }
+
+    function loadTestRuns() {
+        fetch(`/api/projects/${currentProjectId}/test-runs`)
+            .then(r => {
+                if (!r.ok) throw new Error('Network response was not ok');
+                return r.json();
+            })
+            .then(testRuns => {
+                renderTestRuns(testRuns);
+            })
+            .catch(error => {
+                console.error('Error loading test runs:', error);
+                const container = document.getElementById('searchResultsContainer');
+                container.innerHTML = `<div class="alert alert-danger">Ошибка загрузки тест-ранов: ${error.message}</div>`;
+            });
+    }
+
+    function displaySearchResults(testRuns, searchTerm) {
+        renderTestRuns(testRuns, searchTerm);
+    }
+
+    function renderTestRuns(testRuns, searchTerm = '') {
+        const container = document.getElementById('searchResultsContainer');
+        const emptyEl = document.getElementById('emptyTestRuns');
+        const isSearch = Boolean(searchTerm && searchTerm.trim());
+        if (testRuns.length === 0) {
+            if (isSearch) {
+                if (emptyEl) emptyEl.classList.add('d-none');
+                container.innerHTML = `
+                    <div class="search-empty-state">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">По запросу "${searchTerm}" ничего не найдено</h4>
+                        <p class="text-muted">Попробуйте изменить поисковый запрос</p>
+                        <button class="btn btn-primary mt-2" onclick="clearSearch()">
+                            <i class="fas fa-times me-2"></i>Очистить поиск
+                        </button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = '';
+                if (emptyEl) emptyEl.classList.remove('d-none');
+            }
+            return;
+        }
+
+        if (emptyEl) emptyEl.classList.add('d-none');
+        container.innerHTML = testRuns.map(tr => {
+            const stats = tr.stats || {
+                totalCount: tr.testCases ? tr.testCases.length : 0,
+                passedCount: 0,
+                failedCount: 0,
+                skippedCount: 0,
+                notRunCount: tr.testCases ? tr.testCases.length : 0,
+                passedPercentage: 0,
+                failedPercentage: 0,
+                skippedPercentage: 0
+            };
+
+            return `
+            <div class="card test-run-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title">
+                                <a href="/test-run/${tr.id}" class="text-decoration-none">
+                                    <i class="fas fa-play-circle me-2 text-primary"></i>
+                                    ${tr.title}
+                                </a>
+                            </h5>
+                            <p class="card-text text-muted">${tr.description || 'Описание отсутствует'}</p>
+
+                            <!-- Статистика выполнения -->
+                            <div class="stats-container">
+                                <div class="progress mb-2">
+                                    <div class="progress-bar bg-success" role="progressbar"
+                                         style="width: ${stats.passedPercentage}%"></div>
+                                    <div class="progress-bar bg-danger" role="progressbar"
+                                         style="width: ${stats.failedPercentage}%"></div>
+                                    <div class="progress-bar bg-warning" role="progressbar"
+                                         style="width: ${stats.skippedPercentage}%"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="stat-item">
+                                            <span class="stat-badge bg-success"></span>
+                                            <small>Успешно: <strong>${stats.passedCount}</strong></small>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-badge bg-danger"></span>
+                                            <small>Провалено: <strong>${stats.failedCount}</strong></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="stat-item">
+                                            <span class="stat-badge bg-warning"></span>
+                                            <small>Пропущено: <strong>${stats.skippedCount}</strong></small>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-badge bg-secondary"></span>
+                                            <small>Не начато: <strong>${stats.notRunCount}</strong></small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-2">
+                                    <small class="text-muted">Всего тест-кейсов: <strong>${stats.totalCount}</strong></small>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-3 mt-2">
+                                <small><i class="fas fa-user me-1"></i>Исполнитель: ${tr.executorName}</small>
+                                <small><i class="fas fa-user-plus me-1"></i>Создатель: ${tr.creatorName}</small>
+                                <small><i class="fas fa-calendar me-1"></i>Создан: ${new Date(tr.createdAt).toLocaleString('ru-RU')}</small>
+                                <small><i class="fas fa-vial me-1"></i>Тест-кейсов: ${tr.testCases ? tr.testCases.length : 0}</small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge status-badge ${getStatusBadgeClass(tr.status)}">${getStatusDisplayName(tr.status)}</span>
+                            <div class="mt-2">
+                                <button class="btn btn-outline-primary btn-sm edit-test-run-btn me-1"
+                                        data-id="${tr.id}"
+                                        data-title="${tr.title}"
+                                        data-description="${tr.description || ''}"
+                                        data-executor="${tr.executorName}"
+                                        data-creator="${tr.creatorName}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm delete-test-run-btn"
+                                        data-id="${tr.id}"
+                                        data-title="${tr.title}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `}).join('');
+
+        // Добавляем обработчики для новых кнопок
+        document.querySelectorAll('.delete-test-run-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                currentDeleteTestRunId = this.dataset.id;
+                document.getElementById('deleteTestRunTitle').textContent = this.dataset.title;
+                new bootstrap.Modal(document.getElementById('deleteTestRunModal')).show();
+            });
+        });
+
+        document.querySelectorAll('.edit-test-run-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                currentEditTestRunId = this.dataset.id;
+                document.getElementById('editTestRunId').value = currentEditTestRunId;
+                document.getElementById('editTestRunTitle').value = this.dataset.title;
+                document.getElementById('editTestRunDescription').value = this.dataset.description;
+                document.getElementById('editTestRunExecutor').value = this.dataset.executor;
+                document.getElementById('editTestRunCreator').value = this.dataset.creator;
+
+                loadTestRunForEdit(currentEditTestRunId);
+                new bootstrap.Modal(document.getElementById('editTestRunModal')).show();
+            });
+        });
+    }
+
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        loadTestRuns();
+    }
+
+    function getStatusBadgeClass(status) {
+        if (!status) return 'bg-secondary';
+        switch (status) {
+            case 'NOT_STARTED': return 'bg-secondary';
+            case 'IN_PROGRESS': return 'bg-warning';
+            case 'COMPLETED': return 'bg-success';
+            default: return 'bg-secondary';
+        }
+    }
+
+    function getStatusDisplayName(status) {
+        if (!status) return 'Неизвестно';
+        switch (status) {
+            case 'NOT_STARTED': return 'Не начат';
+            case 'IN_PROGRESS': return 'В процессе';
+            case 'COMPLETED': return 'Завершен';
+            default: return status;
+        }
+    }
+
+    function loadTestCasesAndSuites() {
+        // Загрузка тест-кейсов проекта
+        fetch(`/api/projects/${currentProjectId}/test-cases`)
+            .then(r => {
+                if (!r.ok) throw new Error('Failed to load test cases');
+                return r.json();
+            })
+            .then(testCases => {
+                allTestCases = testCases;
+                renderCreateTestCaseCheckboxes('');
+            })
+            .catch(error => {
+                console.error('Error loading test cases:', error);
+                const container = document.getElementById('testCasesCheckboxes');
+                container.innerHTML = `<div class="alert alert-danger">Ошибка загрузки тест-кейсов: ${error.message}</div>`;
+            });
+
+        // Загрузка тест-сьютов проекта
+        fetch(`/api/projects/${currentProjectId}/test-suites`)
+            .then(r => {
+                if (!r.ok) throw new Error('Failed to load test suites');
+                return r.json();
+            })
+            .then(testSuites => {
+                allTestSuites = testSuites;
+                const container = document.getElementById('testSuitesCheckboxes');
+                if (testSuites.length === 0) {
+                    container.innerHTML = '<div class="text-muted text-center">Нет доступных тест-сьютов</div>';
+                } else {
+                    container.innerHTML = testSuites.map(ts =>
+                        `<div class="form-check">
+                            <input class="form-check-input test-suite-checkbox" type="checkbox" value="${ts.id}" id="testSuite-${ts.id}">
+                            <label class="form-check-label" for="testSuite-${ts.id}">
+                                ${ts.name} (ID: ${ts.id})
+                            </label>
+                        </div>`
+                    ).join('');
+
+                    document.querySelectorAll('.test-suite-checkbox').forEach(checkbox => {
+                        checkbox.addEventListener('change', updateSelectionCounts);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading test suites:', error);
+                const container = document.getElementById('testSuitesCheckboxes');
+                container.innerHTML = `<div class="alert alert-danger">Ошибка загрузки тест-сьютов: ${error.message}</div>`;
+            });
+    }
+
+    function renderCreateTestCaseCheckboxes(searchTerm = '') {
+        const container = document.getElementById('testCasesCheckboxes');
+        if (!container) return;
+        const query = String(searchTerm || '').trim().toLowerCase();
+
+        if (!allTestCases.length) {
+            container.innerHTML = '<div class="text-muted text-center">Нет доступных тест-кейсов</div>';
+            updateSelectionCounts();
+            return;
+        }
+
+        const filtered = allTestCases.filter(tc => {
+            if (!query) return true;
+            const name = (tc.name || '').toLowerCase();
+            const tagsText = (tc.tags || [])
+                .map(tag => (tag?.name || '').toLowerCase())
+                .join(' ');
+            return name.includes(query) || tagsText.includes(query);
+        });
+
+        if (!filtered.length) {
+            container.innerHTML = `
+                <div class="text-center text-muted py-3">
+                    <i class="fas fa-search me-1"></i>Ничего не найдено по запросу "${searchTerm}"
+                </div>
+            `;
+            updateSelectionCounts();
+            return;
+        }
+
+        container.innerHTML = filtered.map(tc => {
+            const tags = tc.tags || [];
+            const tagsHtml = tags.length
+                ? tags.map(tag => `<span class="badge rounded-pill test-case-tag">${tag.name}</span>`).join('')
+                : '<span class="text-muted small ms-2">без тегов</span>';
+            return `
+                <div class="form-check">
+                    <input class="form-check-input test-case-checkbox" type="checkbox" value="${tc.id}" id="testCase-${tc.id}" ${selectedCreateTestCaseIds.has(tc.id) ? 'checked' : ''}>
+                    <label class="form-check-label" for="testCase-${tc.id}">
+                        ${tc.name} (ID: ${tc.id}) ${tagsHtml}
+                    </label>
+                </div>
+            `;
+        }).join('');
+
+        document.querySelectorAll('.test-case-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const id = Number(this.value);
+                if (this.checked) {
+                    selectedCreateTestCaseIds.add(id);
+                } else {
+                    selectedCreateTestCaseIds.delete(id);
+                }
+                updateSelectionCounts();
+            });
+        });
+        updateSelectionCounts();
+    }
+
+    function loadTestRunForEdit(testRunId) {
+        const updateButton = document.getElementById('updateTestRunBtn');
+        const originalContent = updateButton.innerHTML;
+        updateButton.innerHTML = '<div class="loading-spinner me-2"></div>Загрузка...';
+        updateButton.disabled = true;
+
+        // Загружаем детальную информацию о тест-ране
+        fetch(`/api/test-runs/${testRunId}/detailed`)
+            .then(r => {
+                if (!r.ok) throw new Error('Failed to load test run details');
+                return r.json();
+            })
+            .then(response => {
+                if (response.success) {
+                    const testRun = response.testRun;
+
+                    // Устанавливаем статус
+                    document.getElementById('editTestRunStatus').value = testRun.status;
+
+                    // Сохраняем текущие тест-кейсы
+                    currentTestRunTestCases = testRun.testCases || [];
+
+                    // Отображаем текущий состав
+                    updateCurrentTestCasesList();
+
+                    // Загружаем доступные для добавления тест-кейсы и тест-сьюты
+                    loadAvailableTestCasesAndSuites();
+
+                    // Загружаем тест-кейсы для удаления
+                    loadTestCasesForRemoval();
+                } else {
+                    throw new Error(response.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading test run details:', error);
+                alert('Ошибка загрузки данных тест-рана: ' + error.message);
+                bootstrap.Modal.getInstance(document.getElementById('editTestRunModal')).hide();
+            })
+            .finally(() => {
+                updateButton.innerHTML = originalContent;
+                updateButton.disabled = false;
+            });
+    }
+
+    function loadAvailableTestCasesAndSuites() {
+        // Загружаем тест-кейсы, которые еще не входят в тест-ран
+        const currentTestCaseIds = currentTestRunTestCases.map(tc => tc.testCase.id);
+        const availableTestCases = allTestCases.filter(tc => !currentTestCaseIds.includes(tc.id));
+
+        const container = document.getElementById('editTestCasesCheckboxes');
+        if (availableTestCases.length === 0) {
+            container.innerHTML = '<div class="text-muted text-center">Нет доступных тест-кейсов для добавления</div>';
+        } else {
+            container.innerHTML = availableTestCases.map(tc =>
+                `<div class="form-check">
+                    <input class="form-check-input edit-test-case-checkbox" type="checkbox" value="${tc.id}" id="editTestCase-${tc.id}">
+                    <label class="form-check-label" for="editTestCase-${tc.id}">
+                        ${tc.name} (ID: ${tc.id})
+                    </label>
+                </div>`
+            ).join('');
+
+            document.querySelectorAll('.edit-test-case-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateEditSelectionCounts);
+            });
+        }
+
+        // Загружаем все тест-сьюты
+        const testSuitesContainer = document.getElementById('editTestSuitesCheckboxes');
+        if (allTestSuites.length === 0) {
+            testSuitesContainer.innerHTML = '<div class="text-muted text-center">Нет доступных тест-сьютов</div>';
+        } else {
+            testSuitesContainer.innerHTML = allTestSuites.map(ts =>
+                `<div class="form-check">
+                    <input class="form-check-input edit-test-suite-checkbox" type="checkbox" value="${ts.id}" id="editTestSuite-${ts.id}">
+                    <label class="form-check-label" for="editTestSuite-${ts.id}">
+                        ${ts.name} (ID: ${ts.id})
+                    </label>
+                </div>`
+            ).join('');
+
+            document.querySelectorAll('.edit-test-suite-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateEditSelectionCounts);
+            });
+        }
+
+        updateEditSelectionCounts();
+    }
+
+    function loadTestCasesForRemoval() {
+        const container = document.getElementById('removeTestCasesCheckboxes');
+        if (currentTestRunTestCases.length === 0) {
+            container.innerHTML = '<div class="text-muted text-center">Нет тест-кейсов для удаления</div>';
+        } else {
+            container.innerHTML = currentTestRunTestCases.map(trtc => {
+                const tc = trtc.testCase;
+                const status = trtc.status || 'NOT_RUN';
+                const statusName = statusDisplayNames[status] || 'Неизвестно';
+                return `
+                <div class="form-check">
+                    <input class="form-check-input remove-test-case-checkbox" type="checkbox" value="${tc.id}" id="removeTestCase-${tc.id}">
+                    <label class="form-check-label" for="removeTestCase-${tc.id}">
+                        ${tc.name} (ID: ${tc.id})
+                        <span class="test-case-status badge bg-${getTestCaseStatusColor(status)}">${statusName}</span>
+                    </label>
+                </div>`;
+            }).join('');
+
+            document.querySelectorAll('.remove-test-case-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateEditSelectionCounts);
+            });
+        }
+
+        updateEditSelectionCounts();
+    }
+
+    function getTestCaseStatusColor(status) {
+        if (!status) return 'secondary';
+        switch (status) {
+            case 'PASSED': return 'success';
+            case 'FAILED': return 'danger';
+            case 'SKIPPED': return 'warning';
+            case 'NOT_RUN': return 'secondary';
+            default: return 'secondary';
+        }
+    }
+
+    function updateCurrentTestCasesList() {
+        const container = document.getElementById('currentTestCasesList');
+        const countElement = document.getElementById('currentTestCasesCount');
+
+        countElement.textContent = currentTestRunTestCases.length;
+
+        if (currentTestRunTestCases.length === 0) {
+            container.innerHTML = '<div class="text-muted text-center">Нет тест-кейсов</div>';
+            return;
+        }
+
+        container.innerHTML = currentTestRunTestCases.map(trtc => {
+            const tc = trtc.testCase;
+            const status = trtc.status || 'NOT_RUN';
+            const statusName = statusDisplayNames[status] || 'Неизвестно';
+            return `
+            <div class="test-case-item">
+                <div class="flex-grow-1">
+                    <strong>${tc.name}</strong> (ID: ${tc.id})
+                </div>
+                <div>
+                    <span class="badge bg-${getTestCaseStatusColor(status)}">${statusName}</span>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function updateSelectionCounts() {
+        const testCasesCount = selectedCreateTestCaseIds.size;
+        document.getElementById('testCasesCount').textContent = `Выбрано: ${testCasesCount} тест-кейсов`;
+
+        const selectedTestSuiteCheckboxes = document.querySelectorAll('.test-suite-checkbox:checked');
+        const testSuitesCount = selectedTestSuiteCheckboxes.length;
+        document.getElementById('testSuitesCount').textContent = `Выбрано: ${testSuitesCount} тест-сьютов`;
+
+        updateFinalTestCaseList();
+    }
+
+    function updateEditSelectionCounts() {
+        // Счетчики для добавления тест-кейсов
+        const selectedEditTestCaseCheckboxes = document.querySelectorAll('.edit-test-case-checkbox:checked');
+        document.getElementById('editTestCasesCount').textContent = `Выбрано: ${selectedEditTestCaseCheckboxes.length} тест-кейсов`;
+
+        // Счетчики для добавления тест-сьютов
+        const selectedEditTestSuiteCheckboxes = document.querySelectorAll('.edit-test-suite-checkbox:checked');
+        document.getElementById('editTestSuitesCount').textContent = `Выбрано: ${selectedEditTestSuiteCheckboxes.length} тест-сьютов`;
+
+        // Счетчики для удаления тест-кейсов
+        const selectedRemoveTestCaseCheckboxes = document.querySelectorAll('.remove-test-case-checkbox:checked');
+        document.getElementById('removeTestCasesCount').textContent = `Выбрано: ${selectedRemoveTestCaseCheckboxes.length} тест-кейсов`;
+
+        updateEditFinalTestCaseList();
+    }
+
+    function updateFinalTestCaseList() {
+        const uniqueTestCaseIds = getUniqueTestCaseIds();
+        const finalListElement = document.getElementById('finalTestCaseList');
+
+        if (uniqueTestCaseIds.size === 0) {
+            finalListElement.innerHTML = '<em>Будут добавлены все уникальные тест-кейсы из выбранных источников</em>';
+            return;
+        }
+
+        const selectedTestCases = allTestCases.filter(tc => uniqueTestCaseIds.has(tc.id));
+
+        finalListElement.innerHTML = `
+            <div><strong>Всего уникальных тест-кейсов: ${uniqueTestCaseIds.size}</strong></div>
+            <div class="mt-1" style="max-height: 100px; overflow-y: auto;">
+                ${selectedTestCases.map(tc =>
+            `<div class="small">• ${tc.name} (ID: ${tc.id})</div>`
+        ).join('')}
+            </div>
+        `;
+    }
+
+    function updateEditFinalTestCaseList() {
+        // Текущие тест-кейсы (без удаленных)
+        const removeTestCaseIds = new Set();
+        document.querySelectorAll('.remove-test-case-checkbox:checked').forEach(checkbox => {
+            removeTestCaseIds.add(Number(checkbox.value));
+        });
+
+        const currentAfterRemoval = currentTestRunTestCases.filter(trtc =>
+            !removeTestCaseIds.has(trtc.testCase.id)
+        ).map(trtc => trtc.testCase.id);
+
+        // Новые тест-кейсы из отдельных чекбоксов
+        const newTestCaseIds = new Set();
+        document.querySelectorAll('.edit-test-case-checkbox:checked').forEach(checkbox => {
+            newTestCaseIds.add(Number(checkbox.value));
+        });
+
+        // Новые тест-кейсы из тест-сьютов
+        document.querySelectorAll('.edit-test-suite-checkbox:checked').forEach(checkbox => {
+            const suiteId = Number(checkbox.value);
+            const suiteTestCases = allTestCases.filter(tc => tc.testSuiteId === suiteId);
+            suiteTestCases.forEach(tc => newTestCaseIds.add(tc.id));
+        });
+
+        // Объединяем все ID
+        const finalTestCaseIds = new Set([...currentAfterRemoval, ...newTestCaseIds]);
+        const finalTestCases = allTestCases.filter(tc => finalTestCaseIds.has(tc.id));
+
+        const finalListElement = document.getElementById('editFinalTestCaseList');
+
+        if (finalTestCaseIds.size === 0) {
+            finalListElement.innerHTML = '<em>В тест-ране не будет тест-кейсов</em>';
+            return;
+        }
+
+        finalListElement.innerHTML = `
+            <div><strong>Всего тест-кейсов после изменений: ${finalTestCaseIds.size}</strong></div>
+            <div class="mt-1" style="max-height: 100px; overflow-y: auto;">
+                ${finalTestCases.map(tc =>
+            `<div class="small">• ${tc.name} (ID: ${tc.id})</div>`
+        ).join('')}
+            </div>
+            <div class="mt-2">
+                <small class="text-muted">
+                    Изменения:
+                    <span class="text-success">+${newTestCaseIds.size} добавлено</span>,
+                    <span class="text-danger">-${removeTestCaseIds.size} удалено</span>
+                </small>
+            </div>
+        `;
+    }
+
+    function getUniqueTestCaseIds() {
+        const uniqueTestCaseIds = new Set(selectedCreateTestCaseIds);
+
+        const selectedTestSuiteCheckboxes = document.querySelectorAll('.test-suite-checkbox:checked');
+        selectedTestSuiteCheckboxes.forEach(checkbox => {
+            const suiteId = Number(checkbox.value);
+            const suiteTestCases = allTestCases.filter(tc => tc.testSuiteId === suiteId);
+            suiteTestCases.forEach(tc => uniqueTestCaseIds.add(tc.id));
+        });
+
+        return uniqueTestCaseIds;
+    }
+
+    function createTestRun() {
+        const title = document.getElementById('testRunTitle').value.trim();
+        const description = document.getElementById('testRunDescription').value.trim();
+        const executorName = document.getElementById('testRunExecutor').value.trim();
+        const creatorName = document.getElementById('testRunCreator').value.trim();
+
+        if (!title || !executorName || !creatorName) {
+            alert('Заполните обязательные поля (отмечены *)');
+            return;
+        }
+
+        const uniqueTestCaseIds = getUniqueTestCaseIds();
+        const finalTestCaseIds = Array.from(uniqueTestCaseIds);
+
+        const selectedTestSuiteCheckboxes = document.querySelectorAll('.test-suite-checkbox:checked');
+        const testSuiteIds = Array.from(selectedTestSuiteCheckboxes).map(checkbox => Number(checkbox.value));
+
+        if (finalTestCaseIds.length === 0) {
+            alert('Выберите хотя бы один тест-кейс или тест-сьют');
+            return;
+        }
+
+        const payload = {
+            title: title,
+            description: description,
+            executorName: executorName,
+            creatorName: creatorName,
+            testCaseIds: finalTestCaseIds,
+            testSuiteIds: testSuiteIds
+        };
+
+        const createButton = document.getElementById('createTestRunBtn');
+        const originalContent = createButton.innerHTML;
+        createButton.innerHTML = '<div class="loading-spinner me-2"></div>Создание...';
+        createButton.disabled = true;
+
+        console.log('Creating test run with payload:', payload);
+
+        fetch(`/api/projects/${currentProjectId}/test-runs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('createTestRunModal')).hide();
+                    document.getElementById('createTestRunForm').reset();
+                    updateSelectionCounts();
+                    location.reload();
+                } else {
+                    alert('Ошибка: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка создания тест-рана: ' + error.message);
+            })
+            .finally(() => {
+                createButton.innerHTML = originalContent;
+                createButton.disabled = false;
+            });
+    }
+
+    function updateTestRun() {
+        const id = document.getElementById('editTestRunId').value;
+        const title = document.getElementById('editTestRunTitle').value.trim();
+        const description = document.getElementById('editTestRunDescription').value.trim();
+        const executorName = document.getElementById('editTestRunExecutor').value.trim();
+        const creatorName = document.getElementById('editTestRunCreator').value.trim();
+        const status = document.getElementById('editTestRunStatus').value;
+
+        if (!title || !executorName || !creatorName) {
+            alert('Заполните обязательные поля (отмечены *)');
+            return;
+        }
+
+        // Собираем ID тест-кейсов для удаления
+        const testCaseIdsToRemove = Array.from(document.querySelectorAll('.remove-test-case-checkbox:checked'))
+            .map(checkbox => Number(checkbox.value));
+
+        // Собираем ID тест-кейсов для добавления
+        const testCaseIdsToAdd = new Set();
+        document.querySelectorAll('.edit-test-case-checkbox:checked').forEach(checkbox => {
+            testCaseIdsToAdd.add(Number(checkbox.value));
+        });
+
+        // Собираем тест-кейсы из выбранных тест-сьютов
+        document.querySelectorAll('.edit-test-suite-checkbox:checked').forEach(checkbox => {
+            const suiteId = Number(checkbox.value);
+            const suiteTestCases = allTestCases.filter(tc => tc.testSuiteId === suiteId);
+            suiteTestCases.forEach(tc => testCaseIdsToAdd.add(tc.id));
+        });
+
+        const payload = {
+            title: title,
+            description: description,
+            executorName: executorName,
+            creatorName: creatorName,
+            status: status,
+            testCaseIdsToAdd: Array.from(testCaseIdsToAdd),
+            testCaseIdsToRemove: testCaseIdsToRemove
+        };
+
+        const updateButton = document.getElementById('updateTestRunBtn');
+        const originalContent = updateButton.innerHTML;
+        updateButton.innerHTML = '<div class="loading-spinner me-2"></div>Сохранение...';
+        updateButton.disabled = true;
+
+        console.log('Updating test run with payload:', payload);
+
+        fetch(`/api/test-runs/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('editTestRunModal')).hide();
+                    location.reload();
+                } else {
+                    alert('Ошибка: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка обновления тест-рана: ' + error.message);
+            })
+            .finally(() => {
+                updateButton.innerHTML = originalContent;
+                updateButton.disabled = false;
+            });
+    }
+
+    function deleteTestRun() {
+        if (!currentDeleteTestRunId) return;
+
+        const deleteButton = document.getElementById('confirmDeleteTestRunBtn');
+        const originalContent = deleteButton.innerHTML;
+        deleteButton.innerHTML = '<div class="loading-spinner me-2"></div>Удаление...';
+        deleteButton.disabled = true;
+
+        fetch(`/api/test-runs/${currentDeleteTestRunId}`, {
+            method: 'DELETE'
+        })
+            .then(r => {
+                if (!r.ok) throw new Error('Network response was not ok');
+                return r.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('deleteTestRunModal')).hide();
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка удаления тест-рана: ' + error.message);
+            })
+            .finally(() => {
+                currentDeleteTestRunId = null;
+                deleteButton.innerHTML = originalContent;
+                deleteButton.disabled = false;
+            });
+    }
+</script>
+</body>
+</html>
