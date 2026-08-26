@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import socket
 import sys
 from pathlib import Path
 
@@ -15,6 +16,14 @@ if str(BASE_DIR) not in sys.path:
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "qms_django.settings")
 # `python app.py` is meant to run locally without PostgreSQL.
 os.environ.setdefault("USE_SQLITE", "true")
+
+
+def _pick_free_port(host: str) -> int:
+    bind_host = "0.0.0.0" if host in {"0.0.0.0", "::"} else host
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.bind((bind_host, 0))
+        return int(sock.getsockname()[1])
 
 
 def _run_django(args: list[str]) -> None:
@@ -30,7 +39,7 @@ def _run_django(args: list[str]) -> None:
 
 def main() -> None:
     host = os.environ.get("QMS_HOST", "0.0.0.0")
-    port = os.environ.get("QMS_PORT", "8000")
+    port = os.environ.get("QMS_PORT") or str(_pick_free_port(host))
 
     print("QMS: applying database migrations...", flush=True)
     os.environ["QMS_SKIP_SCHEDULER"] = "true"
