@@ -1,0 +1,3085 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ testSuite.name }} - Детали тест-сьюта</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container-fluid {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .test-suite-header {
+            background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .test-suite-header h1,
+        .test-suite-header h1 i,
+        .test-suite-header p,
+        .test-suite-header p i {
+            color: white !important;
+        }
+        .card-header {
+            border-radius: 15px 15px 0 0 !important;
+            border: none;
+            padding: 1.25rem 1.5rem;
+        }
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+            color: white !important;
+        }
+        .card-header.testsuite {
+            background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+        }
+        .card-header.tools {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        .card-header.default {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-header.info {
+            background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+        }
+        .card-header.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+        }
+        .card-header i {
+            color: white !important;
+        }
+        .card-header .badge {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .btn-white {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            color: #495057;
+        }
+        .btn-white:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+        .btn-outline-danger {
+            border-radius: 10px;
+            font-weight: 600;
+            border: 2px solid #dc3545;
+            padding: 0.75rem 1.5rem;
+        }
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+        .badge {
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .bg-success { background: linear-gradient(135deg, #28a745, #20c997) !important; }
+        .bg-danger { background: linear-gradient(135deg, #dc3545, #fd7e14) !important; }
+        .bg-warning { background: linear-gradient(135deg, #ffc107, #fd7e14) !important; }
+        .bg-secondary { background: linear-gradient(135deg, #6c757d, #495057) !important; }
+        .bg-primary { background: linear-gradient(135deg, #667eea, #764ba2) !important; }
+        .bg-info { background: linear-gradient(135deg, #17a2b8, #6f42c1) !important; }
+        .bg-light {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #2c3e50 !important;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+        .qa-badge {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        .test-case-item {
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+        .test-case-item:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+        .test-case-item.active {
+            background-color: rgba(102, 126, 234, 0.15);
+            border-left: 3px solid #667eea;
+        }
+        .priority-high { color: #dc3545; }
+        .priority-medium { color: #ffc107; }
+        .priority-low { color: #28a745; }
+        .priority-critical { color: #dc3545; font-weight: bold; }
+        .status-draft { background-color: #6c757d; color: white; }
+        .status-review { background-color: #17a2b8; color: white; }
+        .status-active { background-color: #28a745; color: white; }
+        .status-archive { background-color: #343a40; color: white; }
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 12px;
+        }
+        .search-result-item {
+            cursor: pointer;
+            padding: 0.75rem;
+            border-bottom: 1px solid #eee;
+        }
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+        .no-results {
+            padding: 1rem;
+            text-align: center;
+            color: #6c757d;
+        }
+        .test-case-detail {
+            min-height: 400px;
+        }
+        .detail-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6c757d;
+        }
+        #testCasesList {
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #testCasesContainer {
+            flex: 1 1 auto;
+            min-height: 0;
+            height: auto;
+            max-height: none;
+            overflow-y: auto;
+            overscroll-behavior-y: contain;
+        }
+        .workspace-row {
+            height: auto;
+            min-height: 0;
+            align-items: flex-start;
+        }
+        .workspace-row > [class*="col-"] {
+            display: flex;
+            flex-direction: column;
+            height: auto;
+            min-height: 0;
+        }
+        .workspace-row > [class*="col-"] > .card {
+            flex: none;
+            height: auto;
+            min-height: 0;
+            margin-bottom: 1.5rem;
+        }
+        .detail-card {
+            height: auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .detail-card .card-body {
+            flex: none;
+            height: auto;
+            overflow: visible;
+            min-height: 0;
+        }
+        @media (max-width: 991.98px) {
+            .workspace-row {
+                height: auto;
+                min-height: 0;
+            }
+            .workspace-row > [class*="col-"] {
+                display: block;
+            }
+        }
+        .tag-badge {
+            display: inline-block;
+            padding: 0.25em 0.4em;
+            font-size: 75%;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+            border: 1px solid #000000;
+        }
+
+        /* ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ USER STORIES */
+        .user-stories-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+        .user-story-badge {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #17a2b8, #6f42c1);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            line-height: 1.3;
+            word-break: break-word;
+            white-space: normal;
+            text-align: left;
+            max-width: 100%;
+            min-height: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        .user-story-badge:hover {
+            background: linear-gradient(135deg, #148ea1, #5a36a8);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .user-story-badge .badge-text {
+            flex: 1;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            hyphens: auto;
+        }
+        .no-user-stories {
+            color: #6c757d;
+            font-style: italic;
+            padding: 0.5rem 0;
+        }
+
+        .step-item {
+            border-left: 3px solid #667eea;
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .step-number {
+            font-weight: bold;
+            color: #667eea;
+        }
+        .user-story-dropdown {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .edit-form {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .action-buttons {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 1rem 0;
+            border-top: 1px solid #dee2e6;
+        }
+        .editable-field:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+            cursor: pointer;
+        }
+        .editable-field.editing {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 0.25rem;
+            padding: 0.25rem;
+        }
+        .step-edit-row {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .tag-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            align-items: center;
+            min-height: 2.5rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.25rem;
+        }
+        .tag-input-container:focus-within {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .tag-input {
+            border: none;
+            outline: none;
+            background: transparent;
+            flex: 1;
+            min-width: 100px;
+        }
+        .user-story-container {
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            min-height: 2.5rem;
+        }
+        .user-story-container:focus-within {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        #allUserStoriesContainer {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+        }
+        #allUserStoriesContainer:focus-within {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        #selectedTagsContainer {
+            min-height: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        #tagSuggestions {
+            z-index: 1050;
+        }
+        .tag-checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            margin-bottom: 0.25rem;
+            cursor: pointer;
+        }
+        .tag-checkbox-item:hover {
+            background-color: #e9ecef;
+        }
+        .tag-checkbox-item input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+        .user-story-checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            margin-bottom: 0.25rem;
+            cursor: pointer;
+        }
+        .user-story-checkbox-item:hover {
+            background-color: #e9ecef;
+        }
+        .user-story-checkbox-item input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+        .comment-card {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .comment-card:hover {
+            background-color: #e9ecef;
+        }
+        .comment-actions {
+            opacity: 0;
+            margin-top: 0.5rem;
+        }
+        .comment-card:hover .comment-actions {
+            opacity: 1;
+        }
+        .comment-actions .btn {
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+        .comment-input-group {
+            margin-bottom: 1rem;
+        }
+        .user-avatar {
+            font-size: 1.5rem;
+        }
+        .comment-content {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .ai-comment {
+            border-left: 4px solid #0dcaf0;
+            background-color: #f0f9ff;
+        }
+        .ai-comment:hover {
+            background-color: #e0f2fe;
+        }
+        .ai-analysis-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .ai-analysis-btn .spinner-wrap {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .ai-analysis-btn .spinner-border {
+            display: inline-block;
+        }
+        .ai-analysis-btn.loading .btn-text {
+            opacity: 0;
+        }
+        .ai-analysis-btn.loading .spinner-wrap {
+            display: flex;
+        }
+        .ai-analysis-result-toggle {
+            font-size: 0.85rem;
+        }
+        .ai-analysis-result-content {
+            max-height: 260px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        .ai-analysis-meta {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+        .ai-analysis-result-wrap .card {
+            border-color: #d6ecff;
+            background: #f7fbff;
+        }
+        .ai-analysis-result-empty {
+            color: #6c757d;
+            font-style: italic;
+        }
+        .comments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .sort-dropdown .btn {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        .sort-dropdown .dropdown-menu {
+            min-width: 180px;
+        }
+        .sort-option {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sort-option:hover {
+            background-color: #f8f9fa;
+        }
+        .sort-option.active {
+            background-color: #e9ecef;
+            font-weight: 500;
+        }
+        .sort-option .check-icon {
+            color: #28a745;
+            margin-left: 0.5rem;
+        }
+        .ai-review-section {
+            margin-bottom: 1.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .ai-review-header {
+            background: linear-gradient(135deg, #0dcaf0, #0d6efd);
+            color: white;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ai-review-header:hover {
+            background: linear-gradient(135deg, #0baccc, #0b5ed7);
+        }
+        .ai-review-content {
+            padding: 1rem;
+            background-color: #f8f9fa;
+            display: none;
+        }
+        .ai-review-content.show {
+            display: block;
+        }
+        .ai-review-score {
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .ai-review-criteria {
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .ai-review-criteria:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .ai-review-overall {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            border-left: 4px solid #0dcaf0;
+        }
+        .ai-review-recommendations {
+            background: #fff3cd;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            border-left: 4px solid #ffc107;
+        }
+        .review-loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+        .no-review {
+            text-align: center;
+            padding: 1rem;
+            color: #6c757d;
+            font-style: italic;
+        }
+        .form-control {
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+        }
+        .input-group-text {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-right: none;
+            border-radius: 12px 0 0 12px;
+        }
+        .input-group .form-control {
+            border-radius: 0 12px 12px 0;
+            border-left: none;
+        }
+
+        /* Стили для кнопки выхода */
+        .logout-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+        }
+
+        /* Стили для header с кнопками */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body data-user-role="{{ currentUserRole }}" data-current-user-id="{{ currentUserId }}">
+<div class="container-fluid py-4">
+    <!-- Header с кнопками -->
+    <div class="page-header">
+        <!-- Кнопка возврата -->
+        <a href="/project-qa/{{ testSuite.projectId }}" class="btn btn-white">
+            <i class="fas fa-arrow-left me-2"></i>
+            Вернуться к проекту QA
+        </a>
+
+        <!-- Кнопка выхода -->
+        <form action="/logout" method="post" class="m-0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger">
+                <i class="fas fa-sign-out-alt me-1"></i> Выйти
+            </button>
+        </form>
+    </div>
+
+    <div class="row">
+        <!-- Заголовок тест-сьюта -->
+        <div class="col-12 mb-4">
+            <div class="test-suite-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="mb-2 text-white">
+                            <i class="fas fa-vial me-3 text-white"></i>
+                            <span class="text-white">{{ testSuite.name }}</span>
+                        </h1>
+                        <p class="mb-0 opacity-75 text-white">
+                            <i class="fas fa-hashtag me-2 text-white"></i>
+                            ID: <span class="text-white">{{ testSuite.id }}</span>
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <div class="badge bg-light text-dark fs-6">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            Создан: <span>{{ testSuiteCreatedAtDisplay }}</span>
+                        </div>
+                        <div class="badge qa-badge fs-6 mt-2">
+                            <i class="fas fa-vial me-2"></i>
+                            Тест-сьют
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- QA Инструменты -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header tools">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tools me-2"></i>
+                        QA Инструменты тест-сьюта
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-success w-100" id="bugReportBtn">
+                                <i class="fas fa-bug me-2"></i>
+                                Баг-репорт
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-primary w-100" id="importTestsBtn">
+                                <i class="fas fa-file-import me-2"></i>
+                                Импорт тестов
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-warning w-100" id="runAIReviewBtn">
+                                <i class="fas fa-robot me-2"></i>
+                                Запустить ревью тест-кейсов
+                            </button>
+                            <div class="mt-2 d-none" id="aiReviewProgressWrap">
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-warning" id="aiReviewProgressBar" role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <small class="text-muted d-block mt-1" id="aiReviewProgressText">0 / 0</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-info w-100 ai-analysis-btn" id="aiAnalysisBtn">
+                                <span class="btn-text">
+                                    <i class="fas fa-chart-bar me-2"></i>
+                                    Анализ сьюта
+                                </span>
+                                <div class="spinner-wrap">
+                                    <div class="spinner-border spinner-border-sm text-info" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </button>
+                            <div class="mt-2 d-none ai-analysis-result-wrap" id="aiAnalysisResultWrap">
+                                <button
+                                    class="btn btn-outline-info btn-sm w-100 d-flex align-items-center justify-content-between ai-analysis-result-toggle"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#aiAnalysisResultCollapse"
+                                    aria-expanded="false"
+                                    aria-controls="aiAnalysisResultCollapse"
+                                >
+                                    <span><i class="fas fa-chevron-down me-2"></i>Результат анализа ИИ</span>
+                                </button>
+                                <div class="collapse mt-2" id="aiAnalysisResultCollapse">
+                                    <div class="card card-body">
+                                        <div class="ai-analysis-meta" id="aiAnalysisResultMeta">—</div>
+                                        <pre class="ai-analysis-result-content" id="aiAnalysisResultContent">—</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="row workspace-row">
+        <!-- Список тест-кейсов (1/3 экрана) -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header testsuite d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tasks me-2"></i>
+                        Тест-кейсы
+                    </h5>
+                    <span class="badge" id="testCasesCount" th:text="${#lists.size(testCases)}">0</span>
+                </div>
+                <div class="card-body p-0 d-flex flex-column">
+                    <!-- Форма создания тест-кейса -->
+                    <div class="p-3 border-bottom">
+                        <form id="createTestCaseForm" class="position-relative">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search text-muted"></i>
+                                </span>
+                                <input type="text"
+                                       class="form-control"
+                                       id="testCaseName"
+                                       placeholder="Название тест-кейса..."
+                                       autocomplete="off"
+                                       required>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <!-- Результаты поиска -->
+                            <div id="testCaseSearchResults" class="search-results bg-white border rounded d-none position-absolute w-100 mt-1"></div>
+                        </form>
+                    </div>
+                    <!-- Список тест-кейсов -->
+                    <div id="testCasesList" class="flex-grow-1">
+                        <div id="emptyTestCases" th:class="${#lists.isEmpty(testCases)} ? 'text-center py-4' : 'text-center py-4 d-none'">
+                            <i class="fas fa-inbox fa-lg text-muted mb-2"></i>
+                            <p class="text-muted mb-0 small">Тест-кейсы не найдены</p>
+                        </div>
+                        <div id="testCasesContainer" tabindex="0">
+                            <div th:each="testCase : ${testCases}"
+                                 class="test-case-item border-bottom"
+                                 th:id="'test-case-item-' + ${testCase.id}"
+                                 th:data-test-case-id="${testCase.id}"
+                                 tabindex="0">
+                                <div class="p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="flex-grow-1 me-2">
+                                            <h6 class="mb-1 small">
+                                                <span class="test-case-name" th:text="${testCase.name}">Название тест-кейса</span>
+                                            </h6>
+                                            <div class="d-flex gap-1">
+                                                <span class="badge"
+                                                      th:classappend="'status-' + ${#strings.toLowerCase(testCase.status)}"
+                                                      th:text="${testCase.status}"
+                                                      style="font-size: 0.6rem;">
+                                                    DRAFT
+                                                </span>
+                                                <span class="badge bg-secondary"
+                                                      th:classappend="'priority-' + ${#strings.toLowerCase(testCase.priority)}"
+                                                      th:text="${testCase.priority}"
+                                                      style="font-size: 0.6rem;">
+                                                    MEDIUM
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-clock me-1"></i>
+                                        <span th:text="${#temporals.format(testCase.createdAt, 'dd.MM HH:mm')}">01.01 12:00</span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Детали тест-кейса (2/3 экрана) -->
+        <div class="col-md-8">
+            <div class="card detail-card">
+                <div class="card-header primary d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <span id="testCaseDetailTitle">Детали тест-кейса</span>
+                    </h5>
+                    <div id="testCaseActions" class="d-none">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-light" id="shareTestCaseBtn" title="Копировать ссылку на тест-кейс">
+                                <i class="fas fa-link"></i>
+                            </button>
+                            <button class="btn btn-outline-light" id="editTestCaseBtn" title="Редактировать">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-light ms-1" id="cloneTestCaseBtn" title="Клонировать">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="btn btn-outline-light ms-1" id="deleteTestCaseBtn" title="Удалить">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body test-case-detail">
+                    <div id="testCaseDetailContent">
+                        <div class="detail-placeholder">
+                            <div class="text-center">
+                                <i class="fas fa-mouse-pointer fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Выберите тест-кейс</h5>
+                                <p class="text-muted">Кликните на тест-кейс в списке слева или используйте стрелки ↑↓ для навигации</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Скрытое поле для передачи testSuiteId и projectId -->
+<div id="testSuiteData"
+     data-test-suite-id="{{ testSuite.id }}"
+     data-project-id="{{ testSuite.projectId }}"
+     data-jira-bug-create-url="{{ jiraBugCreateUrl|default:'' }}"
+     style="display: none;">
+</div>
+
+<div class="modal fade" id="importTestsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-file-import me-2"></i>Импорт тест-кейсов</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="importProviderSelect" class="form-label">Источник импорта</label>
+                    <select id="importProviderSelect" class="form-select">
+                        <option value="allure">Allure TestOps</option>
+                        <option value="testit">TestIT</option>
+                    </select>
+                </div>
+                <div class="alert alert-info mb-0">
+                    Настройки подключений задаются администратором в разделе
+                    <strong>Интеграции проектов</strong>.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button class="btn btn-primary" id="confirmImportTestsBtn">
+                    <span class="import-btn-text">Импортировать</span>
+                    <span class="spinner-border spinner-border-sm d-none import-btn-spinner" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Глобальные переменные
+    let searchTimeout = null;
+    let currentActiveTestCase = null;
+    let currentTestCaseData = null;
+    let isEditing = false;
+    let availableTags = [];
+    let availableUserStories = [];
+    let testSuiteData = null;
+    let currentCommentSort = 'desc';
+    const currentUserRole = document.body.dataset.userRole || '';
+    const currentUserId = Number(document.body.dataset.currentUserId || 0) || null;
+
+    function canEditCommentAction(comment) {
+        if (!comment || comment.commentType === 'AI_GENERATED') return false;
+        if (currentUserRole === 'ADMIN') return true;
+        return Boolean(comment.userId) && Number(comment.userId) === currentUserId;
+    }
+
+    // Функция для определения контрастного цвета текста
+    function getContrastTextColor(hexColor) {
+        hexColor = hexColor.replace('#', '');
+        if (hexColor.length === 3) {
+            hexColor = hexColor.split('').map(char => char + char).join('');
+        }
+        const r = parseInt(hexColor.substr(0, 2), 16);
+        const g = parseInt(hexColor.substr(2, 2), 16);
+        const b = parseInt(hexColor.substr(4, 2), 16);
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.5 ? '#000000' : '#FFFFFF';
+    }
+
+    // Функция для форматирования оценки (исправление 65/10 -> 6.5/10)
+    function formatScore(score) {
+        if (score > 10) {
+            // Если оценка 65, делим на 10 чтобы получить 6.5
+            return (score / 10).toFixed(1);
+        }
+        return score.toFixed(1);
+    }
+
+    // Ограничиваем высоту левого списка по правому блоку.
+    function syncWorkspaceHeight() {
+        const listContainer = document.getElementById('testCasesContainer');
+        const leftCard = document.querySelector('.workspace-row .col-md-4 .card');
+        const rightCard = document.querySelector('.workspace-row .detail-card');
+        if (!listContainer || !leftCard || !rightCard) return;
+
+        if (window.matchMedia('(max-width: 991.98px)').matches) {
+            listContainer.style.maxHeight = 'none';
+            listContainer.style.overflowY = 'visible';
+            return;
+        }
+
+        const rightHeight = Math.ceil(rightCard.getBoundingClientRect().height);
+        const leftHeader = leftCard.querySelector('.card-header');
+        const leftSearch = leftCard.querySelector('.p-3.border-bottom');
+        const headerHeight = leftHeader ? Math.ceil(leftHeader.getBoundingClientRect().height) : 0;
+        const searchHeight = leftSearch ? Math.ceil(leftSearch.getBoundingClientRect().height) : 0;
+        const listHeight = Math.max(220, rightHeight - headerHeight - searchHeight);
+
+        listContainer.style.maxHeight = `${listHeight}px`;
+        listContainer.style.overflowY = 'auto';
+    }
+
+    function getRequestedTestCaseIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const requested = urlParams.get('testCaseId');
+        if (!requested || requested === 'undefined' || requested === 'null') {
+            return null;
+        }
+        return requested;
+    }
+
+    function applyRequestedTestCaseSelection(testCases) {
+        const requestedId = getRequestedTestCaseIdFromUrl();
+        if (!requestedId) return false;
+        const existsInList = (testCases || []).some(tc => String(tc.id) === String(requestedId));
+        if (!existsInList) return false;
+
+        loadTestCaseDetail(requestedId);
+        const testCaseElement = document.getElementById(`test-case-item-${requestedId}`);
+        if (testCaseElement) {
+            setActiveTestCase(testCaseElement);
+            testCaseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return true;
+    }
+
+    // Загрузка страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        testSuiteData = {
+            id: document.getElementById('testSuiteData').dataset.testSuiteId,
+            projectId: document.getElementById('testSuiteData').dataset.projectId
+        };
+
+        // Always hydrate the left list from API at runtime.
+        loadTestCases(testSuiteData.id);
+        initializeTestCaseSearch(testSuiteData.id);
+        initializeKeyboardNavigation();
+        loadProjectTags(testSuiteData.projectId);
+        loadProjectUserStories(testSuiteData.projectId);
+        initializeButtonHandlers();
+        initializeAIAnalysisHandler();
+        initializeAIReviewHandler();
+        initializeImportAndBugTools();
+        syncWorkspaceHeight();
+    });
+    window.addEventListener('resize', syncWorkspaceHeight);
+
+    // Инициализация обработчика AI ревью
+    function initializeAIReviewHandler() {
+        const runAIReviewBtn = document.getElementById('runAIReviewBtn');
+        const progressWrap = document.getElementById('aiReviewProgressWrap');
+        const progressBar = document.getElementById('aiReviewProgressBar');
+        const progressText = document.getElementById('aiReviewProgressText');
+        let queueRunning = false;
+        let statusPollIntervalId = null;
+
+        const updateProgressUI = (job) => {
+            if (!job) return;
+            progressWrap.classList.remove('d-none');
+            progressBar.style.width = `${job.progressPercent || 0}%`;
+            progressText.textContent = `${job.processedCases || 0} / ${job.totalCases || 0} (успех: ${job.successCases || 0}, ошибки: ${job.failedCases || 0})`;
+            if (job.status === 'RUNNING') {
+                runAIReviewBtn.disabled = true;
+                const ownerInfo = job.startedByName ? ` (${job.startedByName})` : '';
+                runAIReviewBtn.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>Ревью выполняется${ownerInfo}`;
+            } else {
+                runAIReviewBtn.disabled = false;
+                runAIReviewBtn.innerHTML = '<i class="fas fa-robot me-2"></i>Запустить ревью тест-кейсов';
+            }
+        };
+
+        const startStatusPolling = () => {
+            if (statusPollIntervalId) return;
+            statusPollIntervalId = setInterval(() => {
+                pollStatus();
+            }, 5000);
+        };
+
+        const stopStatusPolling = () => {
+            if (!statusPollIntervalId) return;
+            clearInterval(statusPollIntervalId);
+            statusPollIntervalId = null;
+        };
+
+        const pollStatus = () => {
+            const testSuiteId = testSuiteData.id;
+            return fetch(`/api/test-suites/${testSuiteId}/ai-test-case-review/status`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && data.job) {
+                        updateProgressUI(data.job);
+                        if (data.job.status === 'RUNNING') {
+                            startStatusPolling();
+                        } else {
+                            stopStatusPolling();
+                        }
+                    } else {
+                        // No active queue: do not keep polling indefinitely.
+                        stopStatusPolling();
+                    }
+                })
+                .catch(() => {
+                    stopStatusPolling();
+                });
+        };
+
+        const processQueue = async () => {
+            const testSuiteId = testSuiteData.id;
+            queueRunning = true;
+            while (queueRunning) {
+                let done = false;
+                try {
+                    const response = await fetch(`/api/test-suites/${testSuiteId}/ai-test-case-review/next`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                    });
+                    const data = await response.json();
+                    if (!data.success) {
+                        showMessage(data.message || 'Ошибка обработки очереди AI-ревью', 'danger');
+                        done = true;
+                    } else if (data.job) {
+                        updateProgressUI(data.job);
+                        done = Boolean(data.completed);
+                    }
+                } catch (error) {
+                    console.error('Ошибка очереди AI-ревью:', error);
+                    showMessage('Ошибка обработки очереди AI-ревью', 'danger');
+                    done = true;
+                }
+
+                if (done) {
+                    queueRunning = false;
+                    pollStatus();
+                    stopStatusPolling();
+                    if (currentTestCaseData) loadTestCaseDetail(currentTestCaseData.id);
+                    break;
+                }
+                // Slight delay keeps UI responsive and shows progress updates.
+                await new Promise(resolve => setTimeout(resolve, 150));
+            }
+        };
+
+        runAIReviewBtn.addEventListener('click', async function() {
+            const testSuiteId = testSuiteData.id;
+            if (!confirm('Запустить AI ревью для всех тест-кейсов в сьюте?')) return;
+            if (queueRunning) return;
+            try {
+                const response = await fetch(`/api/test-suites/${testSuiteId}/ai-test-case-review`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    showMessage(data.message || 'Не удалось запустить очередь AI-ревью', 'danger');
+                    if (data.job) updateProgressUI(data.job);
+                    return;
+                }
+                if (data.job) updateProgressUI(data.job);
+                showMessage(data.message || 'Очередь AI-ревью запущена', 'success');
+                startStatusPolling();
+                processQueue();
+            } catch (error) {
+                console.error('Ошибка запуска ревью:', error);
+                showMessage('Ошибка при запуске очереди AI-ревью', 'danger');
+            }
+        });
+
+        pollStatus();
+    }
+
+    // Функция для загрузки AI ревью тест-кейса
+    function loadTestCaseReview(testCaseId) {
+        const aiReviewSection = document.getElementById('aiReviewSection');
+        if (!aiReviewSection) return;
+
+        aiReviewSection.innerHTML = `
+            <div class="review-loading">
+                <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                <p>Загрузка AI ревью...</p>
+            </div>
+        `;
+
+        fetch(`/api/test-cases/${testCaseId}/ai-review`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.review) {
+                    displayAIReview(data.review);
+                } else {
+                    aiReviewSection.innerHTML = `
+                        <div class="no-review">
+                            <i class="fas fa-robot fa-2x mb-2 text-muted"></i>
+                            <p>AI ревью не найдено</p>
+                            <button class="btn btn-outline-primary btn-sm" onclick="runSingleAIReview(${testCaseId})">
+                                <i class="fas fa-play me-1"></i>Запустить ревью
+                            </button>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки ревью:', error);
+                aiReviewSection.innerHTML = `
+                    <div class="no-review">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-2 text-danger"></i>
+                        <p>Ошибка загрузки ревью</p>
+                        <button class="btn btn-outline-primary btn-sm" onclick="loadTestCaseReview(${testCaseId})">
+                            <i class="fas fa-redo me-1"></i>Повторить
+                        </button>
+                    </div>
+                `;
+            });
+    }
+
+    // Функция для запуска AI ревью для одного тест-кейса
+    function runSingleAIReview(testCaseId) {
+        const aiReviewSection = document.getElementById('aiReviewSection');
+        aiReviewSection.innerHTML = `
+            <div class="review-loading">
+                <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                <p>Выполняется AI ревью...</p>
+            </div>
+        `;
+
+        fetch(`/api/test-cases/${testCaseId}/ai-review`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.review) {
+                    displayAIReview(data.review);
+                    showMessage('AI ревью завершено', 'success');
+                } else {
+                    aiReviewSection.innerHTML = `
+                        <div class="no-review">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-2 text-danger"></i>
+                            <p>${data.message || 'Ошибка выполнения ревью'}</p>
+                            <button class="btn btn-outline-primary btn-sm" onclick="runSingleAIReview(${testCaseId})">
+                                <i class="fas fa-redo me-1"></i>Повторить
+                            </button>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка выполнения ревью:', error);
+                aiReviewSection.innerHTML = `
+                    <div class="no-review">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-2 text-danger"></i>
+                        <p>Ошибка выполнения ревью</p>
+                        <button class="btn btn-outline-primary btn-sm" onclick="runSingleAIReview(${testCaseId})">
+                            <i class="fas fa-redo me-1"></i>Повторить
+                        </button>
+                    </div>
+                `;
+            });
+    }
+
+    // Функция для отображения AI ревью
+    function displayAIReview(review) {
+        const aiReviewSection = document.getElementById('aiReviewSection');
+        const reviewResult = review.reviewResult || '';
+        const overallScore = review.overallScore || 0;
+
+        // ИСПРАВЛЕНИЕ: Форматируем оценку правильно
+        const formattedScore = formatScore(overallScore);
+
+        let reviewHtml = `
+            <div class="ai-review-section">
+                <div class="ai-review-header" onclick="toggleAIReview()">
+                    <div>
+                        <i class="fas fa-robot me-2"></i>
+                        <strong>Результат ИИ ревью</strong>
+                    </div>
+                    <div class="ai-review-score">
+                        ${formattedScore}/10
+                    </div>
+                </div>
+                <div class="ai-review-content" id="aiReviewContent">
+        `;
+
+        if (reviewResult) {
+            const lines = reviewResult.split('\n');
+            let inRecommendations = false;
+            let recommendations = [];
+
+            for (let line of lines) {
+                line = line.trim();
+                if (line.startsWith('РЕКОМЕНДАЦИИ:') || line.startsWith('РЕКОМЕНДАЦИИ')) {
+                    inRecommendations = true;
+                    continue;
+                }
+
+                if (inRecommendations) {
+                    if (line) recommendations.push(line);
+                    continue;
+                }
+
+                if (line.match(/^\d+\.\s+/)) {
+                    reviewHtml += `<div class="ai-review-criteria">${line}</div>`;
+                } else if (line.startsWith('ОБЩАЯ ОЦЕНКА:')) {
+                    // ИСПРАВЛЕНИЕ: Форматируем оценку в общей оценке
+                    const scoreMatch = line.match(/ОБЩАЯ ОЦЕНКА:\s*(\d+(?:\.\d+)?)/i);
+                    if (scoreMatch) {
+                        const originalScore = parseFloat(scoreMatch[1]);
+                        const formattedLineScore = formatScore(originalScore);
+                        reviewHtml += `<div class="ai-review-overall"><strong>ОБЩАЯ ОЦЕНКА: ${formattedLineScore}/10</strong></div>`;
+                    } else {
+                        reviewHtml += `<div class="ai-review-overall"><strong>${line}</strong></div>`;
+                    }
+                } else if (line) {
+                    reviewHtml += `<p>${line}</p>`;
+                }
+            }
+
+            if (recommendations.length > 0) {
+                reviewHtml += `<div class="ai-review-recommendations">
+                    <strong>Рекомендации:</strong>
+                    <ul>`;
+                recommendations.forEach(rec => {
+                    if (rec.trim()) reviewHtml += `<li>${rec.trim()}</li>`;
+                });
+                reviewHtml += `</ul></div>`;
+            }
+        } else {
+            reviewHtml += `<p>Результат ревью недоступен</p>`;
+        }
+
+        reviewHtml += `
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <button class="btn btn-outline-primary btn-sm" onclick="runSingleAIReview(${currentTestCaseData?.id || review.testCaseId})">
+                    <i class="fas fa-rotate-right me-1"></i>Перезапросить ИИ ревью
+                </button>
+                <small class="text-muted">
+                    Обновлено: ${new Date(review.updatedAt).toLocaleString('ru-RU')}
+                </small>
+            </div>
+        `;
+
+        aiReviewSection.innerHTML = reviewHtml;
+    }
+
+    // Функция для переключения отображения AI ревью
+    function toggleAIReview() {
+        const content = document.getElementById('aiReviewContent');
+        if (content) {
+            content.classList.toggle('show');
+        }
+    }
+
+    // Функция для отображения деталей тест-кейса
+    function displayTestCaseDetail(testCase) {
+        const detailContent = document.getElementById('testCaseDetailContent');
+        const detailTitle = document.getElementById('testCaseDetailTitle');
+        const actions = document.getElementById('testCaseActions');
+        detailTitle.textContent = testCase.name;
+        actions.classList.remove('d-none');
+
+        // Формируем HTML для отображения деталей
+        let tagsHtml = '';
+        if (testCase.tags && testCase.tags.length > 0) {
+            tagsHtml = testCase.tags.map(tag => {
+                const textColor = getContrastTextColor(tag.color || '#6c757d');
+                return `<span class="tag-badge" style="background-color: ${tag.color || '#6c757d'}; color: ${textColor};">${tag.name}</span>`;
+            }).join('');
+        } else {
+            tagsHtml = '<em class="text-muted">Теги отсутствуют</em>';
+        }
+
+        let stepsHtml = '';
+        if (testCase.steps && testCase.steps.length > 0) {
+            stepsHtml = testCase.steps.map(step => `
+                <div class="step-item">
+                    <div class="d-flex">
+                        <div class="step-number me-2">${step.stepNumber}.</div>
+                        <div class="flex-grow-1">
+                            <div><strong>Действие:</strong> ${step.action}</div>
+                            ${step.expectedResult ? `<div><strong>Ожидаемый результат:</strong> ${step.expectedResult}</div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            stepsHtml = '<div class="text-muted">Шаги отсутствуют</div>';
+        }
+
+        // ОБНОВЛЕННОЕ ОТОБРАЖЕНИЕ USER STORIES
+        let userStoriesHtml = '';
+        if (testCase.userStories && testCase.userStories.length > 0) {
+            userStoriesHtml = `
+                <div class="user-stories-container">
+                    ${testCase.userStories.map(us => `
+                        <div class="user-story-badge">
+                            <span class="badge-text">${us.name}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            userStoriesHtml = '<div class="no-user-stories">User stories не привязаны</div>';
+        }
+
+        // Комментарии
+        let commentsHtml = '';
+        if (testCase.comments && testCase.comments.length > 0) {
+            const sortedComments = sortComments([...testCase.comments], currentCommentSort);
+            commentsHtml = sortedComments.map(comment => generateCommentHtml(comment)).join('');
+        } else {
+            commentsHtml = '<em class="text-muted">Комментарии отсутствуют</em>';
+        }
+
+        detailContent.innerHTML = `
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-light border mb-3">
+                        <i class="fas fa-info-circle me-2 text-primary"></i>
+                        Это режим просмотра. Чтобы изменить "Предусловия", "Описание", "Шаги" и другие поля, нажмите кнопку
+                        <strong><i class="fas fa-edit me-1"></i>Редактировать</strong> в правом верхнем углу карточки.
+                    </div>
+                    <!-- Статус и приоритет -->
+                    <div class="mb-3">
+                        <div class="d-flex gap-2">
+                            <span class="badge status-${testCase.status.toLowerCase()}">
+                                <i class="fas fa-info-circle me-1"></i>
+                                ${testCase.status}
+                            </span>
+                            <span class="badge bg-secondary priority-${testCase.priority.toLowerCase()}">
+                                <i class="fas fa-exclamation-circle me-1"></i>
+                                ${testCase.priority}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- AI Ревью -->
+                    <div class="mb-3">
+                        <div id="aiReviewSection">
+                            <div class="review-loading">
+                                <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                                <p>Загрузка AI ревью...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Теги -->
+                    <div class="mb-3">
+                        <h6><i class="fas fa-tags me-2 text-warning"></i>Теги</h6>
+                        <div class="border rounded p-3">
+                            ${tagsHtml}
+                        </div>
+                    </div>
+
+                    <!-- Предусловия -->
+                    <div class="mb-3">
+                        <h6><i class="fas fa-list-check me-2 text-primary"></i>Предусловия</h6>
+                        <div class="border rounded p-3">
+                            ${testCase.preconditions || '<em class="text-muted">Предусловия отсутствуют</em>'}
+                        </div>
+                    </div>
+
+                    <!-- Описание -->
+                    <div class="mb-3">
+                        <h6><i class="fas fa-align-left me-2 text-success"></i>Описание</h6>
+                        <div class="border rounded p-3">
+                            ${testCase.description || '<em class="text-muted">Описание отсутствует</em>'}
+                        </div>
+                    </div>
+
+                    <!-- Шаги тест-кейса -->
+                    <div class="mb-3">
+                        <h6><i class="fas fa-list-ol me-2 text-info"></i>Шаги тест-кейса</h6>
+                        <div class="border rounded p-3">
+                            ${stepsHtml}
+                        </div>
+                    </div>
+
+                    <!-- Связанные User Stories -->
+                    <div class="mb-3">
+                        <h6><i class="fas fa-book me-2 text-secondary"></i>Связанные User Stories</h6>
+                        <div class="border rounded p-3">
+                            ${userStoriesHtml}
+                        </div>
+                    </div>
+
+                    <!-- Комментарии -->
+                    <div class="mb-3">
+                        <div class="comments-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-comments me-2 text-warning"></i>
+                                Комментарии
+                            </h6>
+                            <div class="sort-dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="commentSortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-sort me-1"></i>
+                                    ${currentCommentSort === 'desc' ? 'Новые сверху' : 'Старые сверху'}
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="commentSortDropdown">
+                                    <li>
+                                        <a class="dropdown-item sort-option ${currentCommentSort === 'desc' ? 'active' : ''}" href="#" data-sort="desc">
+                                            Новые сверху
+                                            ${currentCommentSort === 'desc' ? '<i class="fas fa-check check-icon"></i>' : ''}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item sort-option ${currentCommentSort === 'asc' ? 'active' : ''}" href="#" data-sort="asc">
+                                            Старые сверху
+                                            ${currentCommentSort === 'asc' ? '<i class="fas fa-check check-icon"></i>' : ''}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="border rounded p-3">
+                            <div class="comment-input-group">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="newCommentInput" placeholder="Добавить комментарий...">
+                                    <button class="btn btn-outline-primary" type="button" id="addCommentBtn">Добавить</button>
+                                </div>
+                            </div>
+                            <div id="commentsList">
+                                ${commentsHtml}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Информация -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-info-circle me-2 text-info"></i>Информация</h6>
+                            <div class="border rounded p-3">
+                                <div class="mb-2">
+                                    <small class="text-muted">ID:</small>
+                                    <div class="fw-bold">#${testCase.id}</div>
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted">Создан:</small>
+                                    <div>${new Date(testCase.createdAt).toLocaleString('ru-RU')}</div>
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted">Обновлен:</small>
+                                    <div>${new Date(testCase.updatedAt).toLocaleString('ru-RU')}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Инициализация обработчиков комментариев
+        initializeCommentHandlers();
+        // Инициализация обработчиков сортировки комментариев
+        initializeCommentSortHandlers();
+        // Загружаем AI ревью
+        loadTestCaseReview(testCase.id);
+        requestAnimationFrame(syncWorkspaceHeight);
+    }
+
+    // Функция для обновления URL с ID тест-кейса
+    function updateUrlWithTestCaseId(testCaseId) {
+        if (!testCaseId || testCaseId === 'undefined' || testCaseId === 'null') {
+            return;
+        }
+        const newUrl = `${window.location.pathname}?testCaseId=${testCaseId}`;
+        window.history.pushState({ testCaseId: testCaseId }, '', newUrl);
+    }
+
+    // Функция для копирования ссылки на тест-кейс
+    function copyTestCaseLink(testCaseId) {
+        const testCaseUrl = `${window.location.origin}${window.location.pathname}?testCaseId=${testCaseId}`;
+        navigator.clipboard.writeText(testCaseUrl).then(() => {
+            showMessage('Ссылка на тест-кейс скопирована в буфер обмена!', 'success');
+        }).catch(err => {
+            console.error('Ошибка копирования ссылки: ', err);
+            const textArea = document.createElement('textarea');
+            textArea.value = testCaseUrl;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showMessage('Ссылка на тест-кейс скопирована в буфер обмена!', 'success');
+            } catch (fallbackErr) {
+                console.error('Fallback ошибка копирования: ', fallbackErr);
+                showMessage('Не удалось скопировать ссылку', 'danger');
+            }
+            document.body.removeChild(textArea);
+        });
+    }
+
+    // Функция для обновления элемента тест-кейса в списке
+    function updateTestCaseInList(testCase) {
+        const testCaseElement = document.getElementById(`test-case-item-${testCase.id}`);
+        if (testCaseElement) {
+            const nameElement = testCaseElement.querySelector('.test-case-name');
+            if (nameElement) {
+                nameElement.textContent = testCase.name;
+            }
+            const statusElement = testCaseElement.querySelector('.badge.status-draft, .badge.status-review, .badge.status-active, .badge.status-archive');
+            if (statusElement) {
+                statusElement.classList.remove('status-draft', 'status-review', 'status-active', 'status-archive');
+                statusElement.classList.add(`status-${testCase.status.toLowerCase()}`);
+                statusElement.textContent = testCase.status;
+            }
+            const priorityElement = testCaseElement.querySelector('.badge.priority-low, .badge.priority-medium, .badge.priority-high, .badge.priority-critical');
+            if (priorityElement) {
+                priorityElement.classList.remove('priority-low', 'priority-medium', 'priority-high', 'priority-critical');
+                priorityElement.classList.add(`priority-${testCase.priority.toLowerCase()}`);
+                priorityElement.textContent = testCase.priority;
+            }
+        }
+    }
+
+    // Инициализация поиска тест-кейсов
+    function initializeTestCaseSearch(testSuiteId) {
+        const searchInput = document.getElementById('testCaseName');
+        const searchResults = document.getElementById('testCaseSearchResults');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.trim();
+            clearTimeout(searchTimeout);
+            if (searchTerm.length === 0) {
+                searchResults.classList.add('d-none');
+                return;
+            }
+            searchTimeout = setTimeout(() => {
+                searchTestCases(testSuiteId, searchTerm);
+            }, 300);
+        });
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('d-none');
+            }
+        });
+    }
+
+    // Поиск тест-кейсов
+    function searchTestCases(testSuiteId, term) {
+        if (term.length < 1) {
+            document.getElementById('testCaseSearchResults').classList.add('d-none');
+            return;
+        }
+        fetch(`/api/test-suites/${testSuiteId}/test-cases/search?term=${encodeURIComponent(term)}`)
+            .then(response => response.json())
+            .then(testCases => {
+                const searchResults = document.getElementById('testCaseSearchResults');
+                if (testCases.length > 0) {
+                    searchResults.innerHTML = testCases.map(testCase => `
+                        <div class="search-result-item" onclick="selectTestCase('${testCase.name}')">
+                            <i class="fas fa-search me-2 text-muted"></i>
+                            ${testCase.name}
+                        </div>
+                    `).join('');
+                    searchResults.classList.remove('d-none');
+                } else {
+                    searchResults.innerHTML = '<div class="no-results">Тест-кейсы не найдены. Нажмите Enter для создания.</div>';
+                    searchResults.classList.remove('d-none');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка поиска тест-кейсов:', error);
+                const searchResults = document.getElementById('testCaseSearchResults');
+                searchResults.innerHTML = '<div class="no-results text-danger">Ошибка поиска</div>';
+                searchResults.classList.remove('d-none');
+            });
+    }
+
+    // Выбор тест-кейса из результатов поиска
+    function selectTestCase(name) {
+        document.getElementById('testCaseName').value = name;
+        document.getElementById('testCaseSearchResults').classList.add('d-none');
+    }
+
+    // Создание тест-кейса
+    document.getElementById('createTestCaseForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const testSuiteId = document.getElementById('testSuiteData').dataset.testSuiteId;
+        const testCaseName = document.getElementById('testCaseName').value.trim();
+        if (!testCaseName) {
+            showMessage('Название тест-кейса не может быть пустым!', 'danger');
+            return;
+        }
+        fetch(`/api/test-suites/${testSuiteId}/test-cases`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: testCaseName,
+                description: '',
+                preconditions: ''
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    document.getElementById('testCaseName').value = '';
+                    document.getElementById('testCaseSearchResults').classList.add('d-none');
+                    loadTestCases(testSuiteId);
+                    if (data.testCase && data.testCase.id) {
+                        setTimeout(() => {
+                            loadTestCaseDetail(data.testCase.id);
+                            const testCaseElement = document.getElementById(`test-case-item-${data.testCase.id}`);
+                            if (testCaseElement) {
+                                setActiveTestCase(testCaseElement);
+                            }
+                        }, 300);
+                    }
+                } else {
+                    showMessage(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при создании тест-кейса', 'danger');
+            });
+    });
+
+    // Загрузка тест-кейсов
+    function loadTestCases(testSuiteId) {
+        fetch(`/api/test-suites/${testSuiteId}/test-cases`)
+            .then(response => response.json())
+            .then(testCases => {
+                const container = document.getElementById('testCasesContainer');
+                const countElement = document.getElementById('testCasesCount');
+                const emptyElement = document.getElementById('emptyTestCases');
+                countElement.textContent = testCases.length;
+                if (testCases.length === 0) {
+                    emptyElement.classList.remove('d-none');
+                    container.innerHTML = '';
+                    return;
+                }
+                emptyElement.classList.add('d-none');
+                container.innerHTML = testCases.map(testCase => `
+                    <div class="test-case-item border-bottom"
+                         id="test-case-item-${testCase.id}"
+                         data-test-case-id="${testCase.id}"
+                         tabindex="0">
+                        <div class="p-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="flex-grow-1 me-2">
+                                    <h6 class="mb-1 small">
+                                        <span class="test-case-name">${testCase.name}</span>
+                                    </h6>
+                                    <div class="d-flex gap-1">
+                                        <span class="badge status-${testCase.status.toLowerCase()}" style="font-size: 0.6rem;">
+                                            ${testCase.status}
+                                        </span>
+                                        <span class="badge bg-secondary priority-${testCase.priority.toLowerCase()}" style="font-size: 0.6rem;">
+                                            ${testCase.priority}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <small class="text-muted d-block">
+                                <i class="fas fa-clock me-1"></i>
+                                ${new Date(testCase.createdAt).toLocaleString('ru-RU')}
+                            </small>
+                        </div>
+                    </div>
+                `).join('');
+                addTestCaseClickHandlers();
+
+                const requestedApplied = applyRequestedTestCaseSelection(testCases);
+                if (!requestedApplied) {
+                    const requestedId = getRequestedTestCaseIdFromUrl();
+                    const currentId = currentTestCaseData ? String(currentTestCaseData.id) : null;
+                    const currentExists = currentId
+                        ? testCases.some(tc => String(tc.id) === currentId)
+                        : false;
+
+                    if (currentExists) {
+                        const currentElement = document.getElementById(`test-case-item-${currentId}`);
+                        if (currentElement) {
+                            setActiveTestCase(currentElement);
+                        }
+                    } else if (!requestedId && testCases.length > 0) {
+                        const firstTestCaseId = testCases[0].id;
+                        loadTestCaseDetail(firstTestCaseId);
+                        const firstElement = document.getElementById(`test-case-item-${firstTestCaseId}`);
+                        if (firstElement) {
+                            setActiveTestCase(firstElement);
+                        }
+                    }
+                }
+                requestAnimationFrame(syncWorkspaceHeight);
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки тест-кейсов:', error);
+                showMessage('Ошибка загрузки тест-кейсов', 'danger');
+            });
+    }
+
+    // Добавление обработчиков кликов на тест-кейсы
+    function resolveTestCaseIdFromElement(element) {
+        if (!element) return null;
+        if (element.dataset && element.dataset.testCaseId) return element.dataset.testCaseId;
+        const idAttr = element.id || '';
+        const match = idAttr.match(/test-case-item-(\d+)/);
+        return match ? match[1] : null;
+    }
+
+    function addTestCaseClickHandlers() {
+        const testCases = document.querySelectorAll('.test-case-item');
+        testCases.forEach(testCase => {
+            testCase.addEventListener('click', function(e) {
+                const testCaseId = resolveTestCaseIdFromElement(this);
+                if (!testCaseId) return;
+                loadTestCaseDetail(testCaseId);
+                setActiveTestCase(this);
+                updateUrlWithTestCaseId(testCaseId);
+            });
+        });
+    }
+
+    // Загрузка деталей тест-кейса
+    function loadTestCaseDetail(testCaseId) {
+        if (!testCaseId || testCaseId === 'undefined' || testCaseId === 'null') {
+            return Promise.resolve(null);
+        }
+        return fetch(`/api/test-cases/${testCaseId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.testCase) {
+                    currentTestCaseData = data.testCase;
+                    displayTestCaseDetail(data.testCase);
+                    isEditing = false;
+                    return data.testCase;
+                } else {
+                    showMessage('Ошибка загрузки деталей тест-кейса', 'danger');
+                    return null;
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки деталей тест-кейса:', error);
+                showMessage('Ошибка загрузки деталей тест-кейса', 'danger');
+                return null;
+            });
+    }
+
+    // Установка активного тест-кейса
+    function setActiveTestCase(testCaseElement) {
+        if (currentActiveTestCase) {
+            currentActiveTestCase.classList.remove('active');
+        }
+        testCaseElement.classList.add('active');
+        currentActiveTestCase = testCaseElement;
+        testCaseElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Инициализация навигации стрелками
+    function initializeKeyboardNavigation() {
+        const container = document.getElementById('testCasesContainer');
+        container.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                navigateTestCases(e.key === 'ArrowDown');
+            }
+        });
+        container.addEventListener('click', function() {
+            this.focus();
+        });
+    }
+
+    // Навигация по тест-кейсам стрелками
+    function navigateTestCases(down) {
+        const testCases = Array.from(document.querySelectorAll('.test-case-item'));
+        if (testCases.length === 0) return;
+        let currentIndex = -1;
+        if (currentActiveTestCase) {
+            currentIndex = testCases.indexOf(currentActiveTestCase);
+        }
+        let newIndex;
+        if (down) {
+            newIndex = currentIndex < testCases.length - 1 ? currentIndex + 1 : 0;
+        } else {
+            newIndex = currentIndex > 0 ? currentIndex - 1 : testCases.length - 1;
+        }
+        const nextTestCase = testCases[newIndex];
+        if (nextTestCase) {
+            const testCaseId = resolveTestCaseIdFromElement(nextTestCase);
+            if (!testCaseId) return;
+            loadTestCaseDetail(testCaseId);
+            setActiveTestCase(nextTestCase);
+            nextTestCase.focus();
+            updateUrlWithTestCaseId(testCaseId);
+        }
+    }
+
+    // Загрузка тегов проекта
+    function loadProjectTags(projectId) {
+        fetch(`/api/projects/${projectId}/tags`)
+            .then(response => response.json())
+            .then(tags => {
+                availableTags = tags;
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки тегов:', error);
+            });
+    }
+
+    // Загрузка user stories проекта
+    function loadProjectUserStories(projectId) {
+        fetch(`/api/projects/${projectId}/user-stories`)
+            .then(response => response.json())
+            .then(userStories => {
+                availableUserStories = userStories;
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки user stories:', error);
+            });
+    }
+
+    // Инициализация обработчиков кнопок
+    function initializeButtonHandlers() {
+        async function enterEditMode() {
+            if (isEditing) return;
+
+            let testCase = currentTestCaseData;
+            if (!testCase && currentActiveTestCase) {
+                const activeId = resolveTestCaseIdFromElement(currentActiveTestCase);
+                if (activeId) {
+                    testCase = await loadTestCaseDetail(activeId);
+                }
+            }
+            if (!testCase) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const fromUrl = urlParams.get('testCaseId');
+                if (fromUrl && fromUrl !== 'undefined' && fromUrl !== 'null') {
+                    testCase = await loadTestCaseDetail(fromUrl);
+                }
+            }
+
+            if (!testCase) {
+                showMessage('Сначала выберите тест-кейс в списке слева.', 'warning');
+                return;
+            }
+
+            enableEditMode(testCase);
+            isEditing = true;
+        }
+
+        document.getElementById('editTestCaseBtn').addEventListener('click', function() {
+            enterEditMode();
+        });
+        document.getElementById('cloneTestCaseBtn').addEventListener('click', function() {
+            if (currentActiveTestCase) {
+                const testCaseId = resolveTestCaseIdFromElement(currentActiveTestCase);
+                if (!testCaseId) return;
+                cloneTestCase(testCaseId);
+            }
+        });
+        document.getElementById('deleteTestCaseBtn').addEventListener('click', function() {
+            if (currentActiveTestCase) {
+                const testCaseId = resolveTestCaseIdFromElement(currentActiveTestCase);
+                if (!testCaseId) return;
+                deleteTestCase(testCaseId);
+            }
+        });
+        document.getElementById('shareTestCaseBtn').addEventListener('click', function() {
+            if (currentTestCaseData) {
+                copyTestCaseLink(currentTestCaseData.id);
+            }
+        });
+    }
+
+    function initializeImportAndBugTools() {
+        const testSuiteNode = document.getElementById('testSuiteData');
+        const bugReportBtn = document.getElementById('bugReportBtn');
+        const importTestsBtn = document.getElementById('importTestsBtn');
+        const confirmImportBtn = document.getElementById('confirmImportTestsBtn');
+        const providerSelect = document.getElementById('importProviderSelect');
+        const importModalEl = document.getElementById('importTestsModal');
+        const importModal = importModalEl ? new bootstrap.Modal(importModalEl) : null;
+        const jiraTemplateUrl = (testSuiteNode?.dataset?.jiraBugCreateUrl || '').trim();
+
+        const setImportLoading = (isLoading) => {
+            if (!confirmImportBtn) return;
+            const text = confirmImportBtn.querySelector('.import-btn-text');
+            const spinner = confirmImportBtn.querySelector('.import-btn-spinner');
+            confirmImportBtn.disabled = isLoading;
+            if (text) text.textContent = isLoading ? 'Импорт...' : 'Импортировать';
+            if (spinner) spinner.classList.toggle('d-none', !isLoading);
+        };
+
+        const openJiraCreateIssue = () => {
+            if (!jiraTemplateUrl) {
+                showMessage(
+                    'Для этого проекта не настроена Jira-ссылка. Админ: Админка → Интеграции проектов.',
+                    'warning'
+                );
+                return;
+            }
+            let urlString = jiraTemplateUrl;
+            try {
+                const url = new URL(jiraTemplateUrl, window.location.origin);
+                if (currentTestCaseData) {
+                    const summary = `[QMS] ${currentTestCaseData.name || `TC-${currentTestCaseData.id}`}`;
+                    const description = [
+                        `Источник: QMS`,
+                        `Сьют: ${document.title || ''}`,
+                        `Тест-кейс: ${currentTestCaseData.name || ''}`,
+                        `Описание: ${currentTestCaseData.description || '-'}`,
+                        `Предусловия: ${currentTestCaseData.preconditions || '-'}`,
+                    ].join('\n');
+                    if (!url.searchParams.get('summary')) {
+                        url.searchParams.set('summary', summary);
+                    }
+                    if (!url.searchParams.get('description')) {
+                        url.searchParams.set('description', description);
+                    }
+                }
+                urlString = url.toString();
+            } catch (err) {
+                console.debug('Jira URL parse warning:', err);
+            }
+            window.open(urlString, '_blank', 'noopener,noreferrer');
+        };
+
+        if (bugReportBtn) {
+            bugReportBtn.addEventListener('click', openJiraCreateIssue);
+        }
+        if (importTestsBtn && importModal) {
+            importTestsBtn.addEventListener('click', () => importModal.show());
+        }
+        if (confirmImportBtn) {
+            confirmImportBtn.addEventListener('click', () => {
+                const provider = providerSelect?.value;
+                if (!provider) {
+                    showMessage('Выберите источник импорта', 'warning');
+                    return;
+                }
+                setImportLoading(true);
+                fetch(`/api/test-suites/${testSuiteData.id}/import-test-cases`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ provider }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            showMessage(data.message || 'Ошибка импорта тестов', 'danger');
+                            return;
+                        }
+                        showMessage(
+                            `${data.message}. Источник: ${provider.toUpperCase()}`,
+                            'success'
+                        );
+                        if (importModal) importModal.hide();
+                        loadTestCases(testSuiteData.id);
+                    })
+                    .catch(error => {
+                        console.error('Ошибка импорта тестов:', error);
+                        showMessage('Ошибка при импорте тест-кейсов', 'danger');
+                    })
+                    .finally(() => {
+                        setImportLoading(false);
+                    });
+            });
+        }
+    }
+
+    // Инициализация обработчика AI анализа
+    function initializeAIAnalysisHandler() {
+        const aiAnalysisBtn = document.getElementById('aiAnalysisBtn');
+        const resultWrap = document.getElementById('aiAnalysisResultWrap');
+        const resultMeta = document.getElementById('aiAnalysisResultMeta');
+        const resultContent = document.getElementById('aiAnalysisResultContent');
+        const resultCollapseEl = document.getElementById('aiAnalysisResultCollapse');
+        const resultCollapse = resultCollapseEl ? new bootstrap.Collapse(resultCollapseEl, { toggle: false }) : null;
+
+        function renderAnalysisResult(data, isFresh) {
+            const responseText = (data?.response || '').trim();
+            if (!responseText) {
+                resultWrap.classList.remove('d-none');
+                resultMeta.textContent = 'AI не вернул подробный текст анализа';
+                resultContent.textContent = 'Результат отсутствует';
+                resultContent.classList.add('ai-analysis-result-empty');
+                if (resultCollapse) {
+                    resultCollapse.hide();
+                }
+                return;
+            }
+
+            resultWrap.classList.remove('d-none');
+            resultContent.classList.remove('ai-analysis-result-empty');
+            resultContent.textContent = responseText;
+
+            const timestampRaw = data?.createdAt || data?.created_at || new Date().toISOString();
+            const ts = new Date(timestampRaw);
+            const tsDisplay = Number.isNaN(ts.getTime()) ? timestampRaw : ts.toLocaleString('ru-RU');
+            const sourceLabel = isFresh ? 'Обновлено' : 'Сохранено';
+            resultMeta.textContent = `${sourceLabel}: ${tsDisplay}`;
+
+            if (resultCollapse) {
+                resultCollapse.hide();
+            }
+        }
+
+        function loadLastAnalysis() {
+            const testSuiteId = testSuiteData.id;
+            fetch(`/api/test-suites/${testSuiteId}/ai-analysis`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.response) {
+                        renderAnalysisResult(data, false);
+                    }
+                })
+                .catch(error => {
+                    console.debug('Нет сохраненного анализа или ошибка загрузки:', error);
+                });
+        }
+
+        aiAnalysisBtn.addEventListener('click', function() {
+            const testSuiteId = testSuiteData.id;
+            if (confirm('Запустить анализ тест-сьюта с помощью ИИ? Это может занять несколько минут.')) {
+                aiAnalysisBtn.classList.add('loading');
+                aiAnalysisBtn.disabled = true;
+                fetch(`/api/test-suites/${testSuiteId}/ai-analysis`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showMessage(data.message, 'success');
+                            renderAnalysisResult(data, true);
+                            if (currentTestCaseData) {
+                                loadTestCaseDetail(currentTestCaseData.id);
+                            }
+                            loadTestCases(testSuiteId);
+                        } else {
+                            showMessage(data.message, 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка анализа:', error);
+                        showMessage('Ошибка при анализе тест-сьюта', 'danger');
+                    })
+                    .finally(() => {
+                        aiAnalysisBtn.classList.remove('loading');
+                        aiAnalysisBtn.disabled = false;
+                    });
+            }
+        });
+        loadLastAnalysis();
+    }
+
+    // Клонирование тест-кейса
+    function cloneTestCase(testCaseId) {
+        if (confirm('Вы уверены, что хотите клонировать этот тест-кейс?')) {
+            fetch(`/api/test-cases/${testCaseId}/clone`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        const testSuiteId = document.getElementById('testSuiteData').dataset.testSuiteId;
+                        loadTestCases(testSuiteId);
+                        setTimeout(() => {
+                            loadTestCaseDetail(data.testCase.id);
+                            updateUrlWithTestCaseId(data.testCase.id);
+                        }, 500);
+                    } else {
+                        showMessage(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка клонирования:', error);
+                    showMessage('Ошибка при клонировании тест-кейса', 'danger');
+                });
+        }
+    }
+
+    // Удаление тест-кейса
+    function deleteTestCase(testCaseId) {
+        if (confirm('Вы уверены, что хотите удалить этот тест-кейс?')) {
+            fetch(`/api/test-cases/${testCaseId}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        if (currentActiveTestCase) {
+                            currentActiveTestCase.classList.remove('active');
+                            currentActiveTestCase = null;
+                        }
+                        document.getElementById('testCaseDetailContent').innerHTML = `
+                            <div class="detail-placeholder">
+                                <div class="text-center">
+                                    <i class="fas fa-mouse-pointer fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Выберите тест-кейс</h5>
+                                    <p class="text-muted">Кликните на тест-кейс в списке слева или используйте стрелки ↑↓ для навигации</p>
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('testCaseActions').classList.add('d-none');
+                        window.history.replaceState({}, '', window.location.pathname);
+                        const testSuiteId = document.getElementById('testSuiteData').dataset.testSuiteId;
+                        loadTestCases(testSuiteId);
+                    } else {
+                        showMessage(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка удаления:', error);
+                    showMessage('Ошибка при удалении тест-кейса', 'danger');
+                });
+        }
+    }
+
+    // Функция для отображения сообщений
+    function showMessage(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style = 'top: 20px; right: 20px; z-index: 10000; min-width: 300px;';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+
+    // Обработка нажатия Enter в поле поиска
+    document.getElementById('testCaseName').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('createTestCaseForm').dispatchEvent(new Event('submit'));
+        }
+    });
+
+    // Функции для комментариев
+    function sortComments(comments, sortOrder) {
+        return comments.sort((a, b) => {
+            const dateA = new Date(a.createdAt);
+            const dateB = new Date(b.createdAt);
+            if (sortOrder === 'desc') {
+                return dateB - dateA;
+            } else {
+                return dateA - dateB;
+            }
+        });
+    }
+
+    function initializeCommentSortHandlers() {
+        document.querySelectorAll('.sort-option').forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sortValue = this.dataset.sort;
+                if (sortValue !== currentCommentSort) {
+                    currentCommentSort = sortValue;
+                    if (currentTestCaseData) {
+                        displayTestCaseDetail(currentTestCaseData);
+                    }
+                }
+            });
+        });
+    }
+
+    function generateCommentHtml(comment) {
+        const isAI = comment.commentType === 'AI_GENERATED';
+        const authorName = comment.userFullName || comment.userUsername || 'Неизвестный пользователь';
+        const canEdit = canEditCommentAction(comment);
+        const isEdited = comment.updatedAt && comment.updatedAt !== comment.createdAt;
+        const editInfo = isEdited ? ` <i class="fas fa-edit text-muted" title="Отредактировано: ${new Date(comment.updatedAt).toLocaleString('ru-RU')}"></i>` : '';
+        return `
+            <div class="comment-card ${isAI ? 'ai-comment' : ''}" data-comment-id="${comment.id}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="user-avatar me-2">
+                                <i class="fas ${isAI ? 'fa-robot text-info' : 'fa-user-circle text-primary'}"></i>
+                            </div>
+                            <div>
+                                <strong class="d-block">${authorName}</strong>
+                                <small class="text-muted">
+                                    ${new Date(comment.createdAt).toLocaleString('ru-RU')}
+                                    ${editInfo}
+                                </small>
+                                ${isAI ? `<span class="badge bg-info ms-2">AI</span>` : ''}
+                            </div>
+                        </div>
+                        <p class="mb-1 comment-content">${comment.content}</p>
+                    </div>
+                    <div class="comment-actions">
+                        ${!isAI && canEdit ? `
+                            <button class="btn btn-sm btn-outline-primary edit-comment-btn" title="Редактировать">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-comment-btn" title="Удалить">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function initializeCommentHandlers() {
+        document.getElementById('addCommentBtn').addEventListener('click', addComment);
+        document.querySelectorAll('.edit-comment-btn').forEach(btn => {
+            btn.addEventListener('click', openEditCommentModal);
+        });
+        document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+            btn.addEventListener('click', deleteComment);
+        });
+        document.getElementById('newCommentInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addComment();
+            }
+        });
+    }
+
+    function addComment() {
+        const content = document.getElementById('newCommentInput').value.trim();
+        if (!content) {
+            showMessage('Содержание комментария не может быть пустым!', 'warning');
+            return;
+        }
+        const testCaseId = currentTestCaseData.id;
+        fetch('/api/comments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                testCaseId: testCaseId,
+                content: content
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadTestCaseDetail(testCaseId);
+                    document.getElementById('newCommentInput').value = '';
+                    showMessage('Комментарий добавлен!', 'success');
+                } else {
+                    showMessage(data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error('Ошибка добавления комментария:', err);
+                showMessage('Ошибка при добавлении комментария.', 'danger');
+            });
+    }
+
+    function openEditCommentModal(e) {
+        const commentCard = e.target.closest('.comment-card');
+        const commentId = parseInt(commentCard.dataset.commentId);
+        const comment = currentTestCaseData.comments.find(c => c.id === commentId);
+        if (comment) {
+            const newContent = prompt('Редактировать комментарий:', comment.content);
+            if (newContent !== null && newContent.trim() !== '') {
+                updateComment(commentId, newContent.trim());
+            }
+        }
+    }
+
+    function updateComment(commentId, content) {
+        fetch(`/api/comments/${commentId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: content })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadTestCaseDetail(currentTestCaseData.id);
+                    showMessage('Комментарий обновлён!', 'success');
+                } else {
+                    showMessage(data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error('Ошибка обновления комментария:', err);
+                showMessage('Ошибка при обновлении комментария.', 'danger');
+            });
+    }
+
+    function deleteComment(e) {
+        const commentCard = e.target.closest('.comment-card');
+        const commentId = parseInt(commentCard.dataset.commentId);
+        if (confirm('Вы уверены, что хотите удалить этот комментарий?')) {
+            fetch(`/api/comments/${commentId}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        loadTestCaseDetail(currentTestCaseData.id);
+                        showMessage('Комментарий удалён!', 'success');
+                    } else {
+                        showMessage(data.message, 'danger');
+                    }
+                })
+                .catch(err => {
+                    console.error('Ошибка удаления комментария:', err);
+                    showMessage('Ошибка при удалении комментария.', 'danger');
+                });
+        }
+    }
+
+    function enableEditMode(testCase) {
+        const detailContent = document.getElementById('testCaseDetailContent');
+        const detailTitle = document.getElementById('testCaseDetailTitle');
+        // Формируем HTML для редактирования
+        // Создаем список всех доступных тегов с чекбоксами
+        let allTagsHtml = '';
+        if (availableTags && availableTags.length > 0) {
+            // Получаем ID тегов, уже привязанных к тест-кейсу
+            const currentTagIds = new Set((testCase.tags || []).map(tag => tag.id));
+            allTagsHtml = availableTags.map(tag => {
+                const isChecked = currentTagIds.has(tag.id);
+                const textColor = getContrastTextColor(tag.color);
+                return `
+                <div class="tag-checkbox-item">
+                    <input type="checkbox"
+                           class="tag-checkbox"
+                           id="tag-${tag.id}"
+                           value="${tag.id}"
+                           ${isChecked ? 'checked' : ''}>
+                    <label for="tag-${tag.id}" class="tag-badge" style="background-color: ${tag.color}; color: ${textColor}; margin-bottom: 0;">
+                        ${tag.name}
+                    </label>
+                </div>
+                `;
+            }).join('');
+        } else {
+            allTagsHtml = '<em class="text-muted">Теги не найдены для этого проекта.</em>';
+        }
+        let stepsHtml = '';
+        if (testCase.steps && testCase.steps.length > 0) {
+            stepsHtml = testCase.steps.map((step, index) => `
+                <div class="step-edit-row mb-2 p-2 border rounded" data-step-id="${step.id}">
+                    <div class="row g-2">
+                        <div class="col-md-1">
+                            <input type="number" class="form-control form-control-sm step-number-input" value="${step.stepNumber}" placeholder="#">
+                        </div>
+                        <div class="col-md-5">
+                            <textarea class="form-control form-control-sm step-action-input" placeholder="Действие">${step.action}</textarea>
+                        </div>
+                        <div class="col-md-5">
+                            <textarea class="form-control form-control-sm step-result-input" placeholder="Ожидаемый результат">${step.expectedResult || ''}</textarea>
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="event.stopPropagation(); removeStep(${step.id || 'null'}, this);">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        // Подготовим данные для User Stories: ID уже связанных US
+        const linkedUserStoryIds = new Set();
+        if (testCase.userStories && testCase.userStories.length > 0) {
+            testCase.userStories.forEach(us => linkedUserStoryIds.add(us.id));
+        }
+        // Сгенерируем список всех доступных User Stories с отметкой связанных
+        let allUserStoriesHtml = '';
+        if (availableUserStories && availableUserStories.length > 0) {
+            // Сортируем: сначала связанные, затем остальные
+            const sortedUserStories = [...availableUserStories].sort((a, b) => {
+                const aLinked = linkedUserStoryIds.has(a.id) ? 0 : 1;
+                const bLinked = linkedUserStoryIds.has(b.id) ? 0 : 1;
+                return aLinked - bLinked;
+            });
+            allUserStoriesHtml = sortedUserStories.map(us => {
+                const isLinked = linkedUserStoryIds.has(us.id);
+                const checkboxId = `us-checkbox-${us.id}`;
+                return `
+                <div class="user-story-checkbox-item" data-user-story-id="${us.id}">
+                    <input class="form-check-input user-story-checkbox"
+                           type="checkbox"
+                           value="${us.id}"
+                           id="${checkboxId}"
+                           ${isLinked ? 'checked' : ''}>
+                    <label class="form-check-label" for="${checkboxId}">
+                        ${us.name}
+                        <small class="text-muted">(ID: ${us.id})</small>
+                    </label>
+                </div>
+                `;
+            }).join('');
+        } else {
+            allUserStoriesHtml = '<em class="text-muted">User Stories не найдены для этого проекта.</em>';
+        }
+        // Комментарии в режиме редактирования
+        let commentsHtml = '';
+        if (testCase.comments && testCase.comments.length > 0) {
+            // Сортируем комментарии в соответствии с текущей настройкой
+            const sortedComments = sortComments([...testCase.comments], currentCommentSort);
+            commentsHtml = sortedComments.map(comment => generateCommentHtml(comment)).join('');
+        } else {
+            commentsHtml = '<em class="text-muted">Комментарии отсутствуют</em>';
+        }
+        detailContent.innerHTML = `
+            <!-- Кнопки действий в верхней части -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-secondary" id="cancelEditBtn">
+                        <i class="fas fa-times me-1"></i>Отмена
+                    </button>
+                    <button class="btn btn-primary" id="saveTestCaseBtn">
+                        <i class="fas fa-save me-1"></i>Сохранить
+                    </button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <!-- Название тест-кейса -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Название тест-кейса *</strong></label>
+                        <input type="text" class="form-control" id="editTestCaseName" value="${testCase.name}" required>
+                    </div>
+                    <!-- Статус и приоритет -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Статус</label>
+                            <select class="form-select" id="editTestCaseStatus">
+                                <option value="DRAFT" ${testCase.status === 'DRAFT' ? 'selected' : ''}>Draft</option>
+                                <option value="REVIEW" ${testCase.status === 'REVIEW' ? 'selected' : ''}>Review</option>
+                                <option value="ACTIVE" ${testCase.status === 'ACTIVE' ? 'selected' : ''}>Active</option>
+                                <option value="ARCHIVE" ${testCase.status === 'ARCHIVE' ? 'selected' : ''}>Archive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Приоритет</label>
+                            <select class="form-select" id="editTestCasePriority">
+                                <option value="LOW" ${testCase.priority === 'LOW' ? 'selected' : ''}>Low</option>
+                                <option value="MEDIUM" ${testCase.priority === 'MEDIUM' ? 'selected' : ''}>Medium</option>
+                                <option value="HIGH" ${testCase.priority === 'HIGH' ? 'selected' : ''}>High</option>
+                                <option value="CRITICAL" ${testCase.priority === 'CRITICAL' ? 'selected' : ''}>Critical</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Теги -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Теги</strong></label>
+                        <div class="border rounded p-3">
+                            <p class="text-muted"><small>Отметьте теги, которые связаны с этим тест-кейсом:</small></p>
+                            <div id="allTagsContainer" class="mt-2">
+                                ${allTagsHtml}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Предусловия -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Предусловия</strong></label>
+                        <textarea class="form-control" id="editTestCasePreconditions" rows="3">${testCase.preconditions || ''}</textarea>
+                    </div>
+                    <!-- Описание -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Описание</strong></label>
+                        <textarea class="form-control" id="editTestCaseDescription" rows="4">${testCase.description || ''}</textarea>
+                    </div>
+                    <!-- Шаги тест-кейса -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label"><strong>Шаги тест-кейса</strong></label>
+                            <button class="btn btn-outline-primary btn-sm" id="addStepBtn">
+                                <i class="fas fa-plus me-1"></i>Добавить шаг
+                            </button>
+                        </div>
+                        <div class="border rounded p-3">
+                            <div id="stepsContainer">
+                                ${stepsHtml || '<div class="text-muted text-center py-2">Шаги отсутствуют</div>'}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Связанные User Stories -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Связанные User Stories</strong></label>
+                        <div class="border rounded p-3">
+                            <p class="text-muted"><small>Отметьте User Stories, которые связаны с этим тест-кейсом:</small></p>
+                            <div id="allUserStoriesContainer" class="mt-2">
+                                ${allUserStoriesHtml}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Комментарии в режиме редактирования -->
+                    <div class="mb-3">
+                        <div class="comments-header">
+                            <label class="form-label mb-0"><strong>Комментарии</strong></label>
+                            <div class="sort-dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="commentSortDropdownEdit" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-sort me-1"></i>
+                                    ${currentCommentSort === 'desc' ? 'Новые сверху' : 'Старые сверху'}
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="commentSortDropdownEdit">
+                                    <li>
+                                        <a class="dropdown-item sort-option ${currentCommentSort === 'desc' ? 'active' : ''}" href="#" data-sort="desc">
+                                            Новые сверху
+                                            ${currentCommentSort === 'desc' ? '<i class="fas fa-check check-icon"></i>' : ''}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item sort-option ${currentCommentSort === 'asc' ? 'active' : ''}" href="#" data-sort="asc">
+                                            Старые сверху
+                                            ${currentCommentSort === 'asc' ? '<i class="fas fa-check check-icon"></i>' : ''}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="border rounded p-3">
+                            <div class="comment-input-group">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="newCommentInput" placeholder="Добавить комментарий...">
+                                    <button class="btn btn-outline-primary" type="button" id="addCommentBtn">Добавить</button>
+                                </div>
+                            </div>
+                            <div id="commentsList">
+                                ${commentsHtml}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Информация -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-info-circle me-2 text-info"></i>Информация</h6>
+                            <div class="border rounded p-3">
+                                <div class="mb-2">
+                                    <small class="text-muted">ID:</small>
+                                    <div class="fw-bold">#${testCase.id}</div>
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted">Создан:</small>
+                                    <div>${new Date(testCase.createdAt).toLocaleString('ru-RU')}</div>
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted">Обновлен:</small>
+                                    <div>${new Date(testCase.updatedAt).toLocaleString('ru-RU')}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        // Инициализация обработчиков для режима редактирования
+        initializeEditModeHandlers(testCase);
+        // Инициализация обработчиков сортировки комментариев в режиме редактирования
+        initializeCommentSortHandlers();
+        requestAnimationFrame(syncWorkspaceHeight);
+    }
+
+    function initializeEditModeHandlers(testCase) {
+        // Кнопка отмены
+        document.getElementById('cancelEditBtn')?.addEventListener('click', function() {
+            if (currentTestCaseData) {
+                displayTestCaseDetail(currentTestCaseData);
+                isEditing = false;
+            }
+        });
+        // Кнопка сохранения
+        document.getElementById('saveTestCaseBtn')?.addEventListener('click', function() {
+            saveTestCase();
+        });
+        // Кнопка добавления шага
+        document.getElementById('addStepBtn')?.addEventListener('click', function() {
+            addNewStep();
+        });
+        // Инициализация обработчиков комментариев в режиме редактирования
+        initializeCommentHandlers();
+    }
+
+    async function saveTestCase() {
+        if (!currentTestCaseData) return;
+        const testCaseId = currentTestCaseData.id;
+        const updatedData = {
+            name: document.getElementById('editTestCaseName').value,
+            description: document.getElementById('editTestCaseDescription').value,
+            preconditions: document.getElementById('editTestCasePreconditions').value,
+            status: document.getElementById('editTestCaseStatus').value,
+            priority: document.getElementById('editTestCasePriority').value
+        };
+
+        try {
+            // 1) Базовые поля (ключевая часть редактирования) сохраняем в первую очередь.
+            const baseResponse = await fetch(`/api/test-cases/${testCaseId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedData)
+            });
+            const baseData = await baseResponse.json();
+            if (!baseData.success) {
+                throw new Error(baseData.message || 'Ошибка сохранения тест-кейса');
+            }
+
+            // 2) Связанные сущности сохраняем независимо, чтобы один сбой не отменял весь результат.
+            const results = await Promise.allSettled([
+                saveTestCaseTags(testCaseId),
+                saveTestCaseSteps(testCaseId),
+                saveTestCaseUserStories(testCaseId),
+            ]);
+
+            const failed = results.filter(r => r.status === 'rejected');
+            if (failed.length > 0) {
+                console.warn('Часть операций сохранения завершилась с ошибкой:', failed);
+            }
+
+            // 3) Всегда перезагружаем финальное состояние из API.
+            const finalResponse = await fetch(`/api/test-cases/${testCaseId}`);
+            const finalData = await finalResponse.json();
+            if (!finalData.success || !finalData.testCase) {
+                throw new Error(finalData.message || 'Не удалось получить обновленный тест-кейс');
+            }
+
+            const finalTestCase = finalData.testCase;
+            currentTestCaseData = finalTestCase;
+            updateTestCaseInList(finalTestCase);
+            displayTestCaseDetail(finalTestCase);
+            isEditing = false;
+
+            if (failed.length > 0) {
+                showMessage('Основные данные сохранены, но часть дополнительных изменений не применена.', 'warning');
+            } else {
+                showMessage('Тест-кейс успешно сохранен!', 'success');
+            }
+        } catch (error) {
+            console.error('Ошибка сохранения:', error);
+            showMessage('Ошибка при сохранении тест-кейса: ' + error.message, 'danger');
+        }
+    }
+
+    function saveTestCaseTags(testCaseId) {
+        return new Promise((resolve, reject) => {
+            try {
+                // 1. Собираем ID выбранных тегов из формы
+                const selectedTagCheckboxes = document.querySelectorAll('#allTagsContainer .tag-checkbox:checked');
+                const selectedTagIds = Array.from(selectedTagCheckboxes).map(cb => parseInt(cb.value, 10));
+                console.log("Выбранные теги ID:", selectedTagIds);
+                // 2. Получаем текущие теги тест-кейса из БД
+                fetch(`/api/test-cases/${testCaseId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            throw new Error(data.message || 'Не удалось получить текущий тест-кейс');
+                        }
+                        const currentTestCase = data.testCase;
+                        const currentTagIds = (currentTestCase.tags || []).map(tag => tag.id);
+                        console.log("Текущие теги ID:", currentTagIds);
+                        // 3. Определяем, какие теги нужно добавить, а какие удалить
+                        const idsToAdd = selectedTagIds.filter(id => !currentTagIds.includes(id));
+                        const idsToRemove = currentTagIds.filter(id => !selectedTagIds.includes(id));
+                        console.log("Теги ID для добавления:", idsToAdd);
+                        console.log("Теги ID для удаления:", idsToRemove);
+                        // 4. Выполняем операции: сначала удаляем, потом добавляем
+                        // Создаем массив промисов для удаления
+                        const removePromises = idsToRemove.map(tagId =>
+                            fetch(`/api/test-cases/${testCaseId}/tags/${tagId}`, { method: 'DELETE' })
+                                .then(res => {
+                                    if (!res.ok) {
+                                        return res.json().then(err => { throw new Error(err.message || `HTTP ${res.status}`); });
+                                    }
+                                    return res.json();
+                                })
+                                .catch(err => {
+                                    console.error(`Ошибка удаления тега ${tagId}:`, err);
+                                    return { success: false, message: `Ошибка удаления тега ${tagId}` };
+                                })
+                        );
+                        // Ждем завершения всех операций удаления
+                        return Promise.all(removePromises)
+                            .then(() => {
+                                // Создаем массив промисов для добавления
+                                const addPromises = idsToAdd.map(tagId =>
+                                    fetch(`/api/test-cases/${testCaseId}/tags/${tagId}`, { method: 'POST' })
+                                        .then(res => {
+                                            if (!res.ok) {
+                                                return res.json().then(err => { throw new Error(err.message || `HTTP ${res.status}`); });
+                                            }
+                                            return res.json();
+                                        })
+                                        .catch(err => {
+                                            console.error(`Ошибка добавления тега ${tagId}:`, err);
+                                            return { success: false, message: `Ошибка добавления тега ${tagId}` };
+                                        })
+                                );
+                                // Ждем завершения всех операций добавления
+                                return Promise.all(addPromises);
+                            })
+                            .then(() => {
+                                // 5. После всех операций снова загружаем обновленный тест-кейс
+                                return fetch(`/api/test-cases/${testCaseId}`)
+                                    .then(response => response.json());
+                            });
+                    })
+                    .then(finalData => {
+                        if (finalData.success) {
+                            resolve(finalData.testCase);
+                        } else {
+                            reject(new Error(finalData.message || 'Не удалось получить обновленный тест-кейс'));
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Ошибка в процессе сохранения тегов:", err);
+                        reject(err);
+                    });
+            } catch (e) {
+                console.error("Ошибка при подготовке тегов к сохранению:", e);
+                reject(e);
+            }
+        });
+    }
+
+    function saveTestCaseSteps(testCaseId) {
+        return new Promise((resolve, reject) => {
+            try {
+                // 1. Собираем шаги из формы редактирования
+                const stepElements = document.querySelectorAll('#stepsContainer .step-edit-row');
+                const stepsToProcess = [];
+                stepElements.forEach((el, index) => {
+                    const stepId = el.dataset.stepId;
+                    const numberInput = el.querySelector('.step-number-input');
+                    const actionInput = el.querySelector('.step-action-input');
+                    const resultInput = el.querySelector('.step-result-input');
+                    const stepNumber = numberInput ? parseInt(numberInput.value, 10) || (index + 1) : (index + 1);
+                    const action = actionInput ? actionInput.value.trim() : '';
+                    const expectedResult = resultInput ? resultInput.value.trim() : '';
+                    // Добавляем шаг в список на обработку, только если действие не пустое
+                    if (action) {
+                        stepsToProcess.push({
+                            id: stepId !== 'undefined' ? parseInt(stepId, 10) : null, // null для новых шагов
+                            stepNumber: stepNumber,
+                            action: action,
+                            expectedResult: expectedResult
+                        });
+                    }
+                });
+                console.log("Шаги для обработки:", stepsToProcess);
+                // 2. Получаем текущие шаги тест-кейса из БД для сравнения
+                fetch(`/api/test-cases/${testCaseId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            throw new Error(data.message || 'Не удалось получить текущий тест-кейс');
+                        }
+                        const currentTestCase = data.testCase;
+                        const currentSteps = currentTestCase.steps || [];
+                        console.log("Текущие шаги из БД:", currentSteps);
+                        // 3. Определяем шаги для удаления (те, которых нет в stepsToProcess)
+                        // Сопоставляем по ID, если ID есть (т.е. шаг существующий)
+                        const existingCurrentStepIds = new Set(currentSteps.map(s => s.id));
+                        const existingProcessedStepIds = new Set(stepsToProcess.filter(s => s.id).map(s => s.id));
+                        const stepsToDeleteIds = [...existingCurrentStepIds].filter(id => !existingProcessedStepIds.has(id));
+                        console.log("ID шагов для удаления:", stepsToDeleteIds);
+                        // 4. Определяем шаги для обновления и создания
+                        const stepsToUpdate = stepsToProcess.filter(step => step.id);
+                        const stepsToCreate = stepsToProcess.filter(step => !step.id && (step.action || step.expectedResult));
+                        console.log("Шаги для обновления:", stepsToUpdate);
+                        console.log("Шаги для создания:", stepsToCreate);
+                        // 5. Выполняем операции: сначала удаляем, потом обновляем, потом создаем
+                        const deletePromises = stepsToDeleteIds.map(stepId =>
+                            fetch(`/api/test-steps/${stepId}`, { method: 'DELETE' })
+                                .then(res => {
+                                    if (!res.ok) {
+                                        return res.json().then(err => { throw new Error(err.message || `HTTP ${res.status}`); });
+                                    }
+                                    return res.json();
+                                })
+                                .catch(err => {
+                                    console.warn(`Ошибка удаления шага ${stepId} (возможно, он уже удален):`, err.message);
+                                    return { success: true }; // Игнорируем ошибки удаления
+                                })
+                        );
+                        return Promise.all(deletePromises)
+                            .then(() => {
+                                const updatePromises = stepsToUpdate.map(step =>
+                                    fetch(`/api/test-steps/${step.id}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            stepNumber: step.stepNumber,
+                                            action: step.action,
+                                            expectedResult: step.expectedResult
+                                        })
+                                    }).then(res => {
+                                        if (!res.ok) {
+                                            return res.json().then(err => { throw new Error(err.message || `HTTP ${res.status}`); });
+                                        }
+                                        return res.json();
+                                    })
+                                        .catch(err => {
+                                            console.error(`Ошибка обновления шага ${step.id}:`, err);
+                                            return { success: false, message: `Ошибка обновления шага ${step.id}: ${err.message}` };
+                                        })
+                                );
+                                return Promise.all(updatePromises);
+                            })
+                            .then(() => {
+                                const createPromises = stepsToCreate.map(step =>
+                                    fetch(`/api/test-cases/${testCaseId}/steps`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            stepNumber: step.stepNumber,
+                                            action: step.action,
+                                            expectedResult: step.expectedResult
+                                        })
+                                    }).then(res => {
+                                        if (!res.ok) {
+                                            return res.json().then(err => { throw new Error(err.message || `HTTP ${res.status}`); });
+                                        }
+                                        return res.json();
+                                    })
+                                        .catch(err => {
+                                            console.error(`Ошибка создания шага:`, err);
+                                            return { success: false, message: `Ошибка создания шага: ${err.message}` };
+                                        })
+                                );
+                                return Promise.all(createPromises);
+                            })
+                            .then(() => {
+                                // 6. После всех операций снова загружаем обновленный тест-кейс
+                                return fetch(`/api/test-cases/${testCaseId}`)
+                                    .then(response => response.json());
+                            });
+                    })
+                    .then(finalData => {
+                        if (finalData.success) {
+                            resolve(finalData.testCase);
+                        } else {
+                            reject(new Error(finalData.message || 'Не удалось получить обновленный тест-кейс'));
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Ошибка в процессе сохранения шагов:", err);
+                        reject(err);
+                    });
+            } catch (e) {
+                console.error("Ошибка при подготовке шагов к сохранению:", e);
+                reject(e);
+            }
+        });
+    }
+
+    function saveTestCaseUserStories(testCaseId) {
+        return new Promise((resolve, reject) => {
+            try {
+                // 1. Собираем ID выбранных (отмеченных) User Stories из формы
+                const checkedCheckboxes = document.querySelectorAll('#allUserStoriesContainer .user-story-checkbox:checked');
+                const selectedUserStoryIds = Array.from(checkedCheckboxes).map(cb => parseInt(cb.value, 10));
+                console.log("Выбранные User Story IDs:", selectedUserStoryIds);
+                // 2. Получаем текущие связи User Stories с тест-кейсом из БД
+                fetch(`/api/test-cases/${testCaseId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            throw new Error(data.message || 'Не удалось получить текущий тест-кейс');
+                        }
+                        const currentTestCase = data.testCase;
+                        const currentUserStoryIds = (currentTestCase.userStories || []).map(us => us.id);
+                        console.log("Текущие User Story IDs:", currentUserStoryIds);
+                        // 3. Определяем, какие связи нужно добавить, а какие удалить
+                        const idsToAdd = selectedUserStoryIds.filter(id => !currentUserStoryIds.includes(id));
+                        const idsToRemove = currentUserStoryIds.filter(id => !selectedUserStoryIds.includes(id));
+                        console.log("User Story IDs для добавления:", idsToAdd);
+                        console.log("User Story IDs для удаления:", idsToRemove);
+                        // 4. Выполняем операции: сначала удаляем, потом добавляем
+                        // Создаем массив промисов для удаления
+                        const removePromises = idsToRemove.map(usId =>
+                            fetch(`/api/test-cases/${testCaseId}/user-stories/${usId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                }
+                            })
+                                .then(res => {
+                                    // Проверяем статус ответа
+                                    if (!res.ok) {
+                                        // Если статус не OK, пытаемся получить тело ответа как JSON
+                                        return res.json().then(err => {
+                                            throw new Error(err.message || `HTTP ${res.status}`);
+                                        });
+                                    }
+                                    // Если статус OK, возвращаем JSON
+                                    return res.json();
+                                })
+                                .catch(err => {
+                                    console.error(`Ошибка удаления связи с User Story ${usId}:`, err);
+                                    // Возвращаем объект с информацией об ошибке, но не отклоняем промис,
+                                    // чтобы другие операции могли продолжиться
+                                    return { success: false, message: `Ошибка удаления связи с User Story ${usId}: ${err.message}` };
+                                })
+                        );
+                        // Ждем завершения всех операций удаления
+                        return Promise.all(removePromises)
+                            .then(() => {
+                                // Создаем массив промисов для добавления
+                                const addPromises = idsToAdd.map(usId =>
+                                    fetch(`/api/test-cases/${testCaseId}/user-stories/${usId}`, { method: 'POST' })
+                                        .then(res => {
+                                            if (!res.ok) {
+                                                return res.json().then(err => { throw new Error(err.message || `HTTP ${res.status}`); });
+                                            }
+                                            return res.json();
+                                        })
+                                        .catch(err => {
+                                            console.error(`Ошибка добавления связи с User Story ${usId}:`, err);
+                                            return { success: false, message: `Ошибка добавления связи с User Story ${usId}` };
+                                        })
+                                );
+                                // Ждем завершения всех операций добавления
+                                return Promise.all(addPromises);
+                            })
+                            .then(() => {
+                                // 5. После всех операций снова загружаем обновленный тест-кейс
+                                return fetch(`/api/test-cases/${testCaseId}`)
+                                    .then(response => response.json());
+                            });
+                    })
+                    .then(finalData => {
+                        if (finalData.success) {
+                            resolve(finalData.testCase);
+                        } else {
+                            reject(new Error(finalData.message || 'Не удалось получить обновленный тест-кейс'));
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Ошибка в процессе сохранения User Stories:", err);
+                        // Добавляем более информативное сообщение об ошибке
+                        reject(new Error(`Ошибка в процессе сохранения User Stories: ${err.message}`));
+                    });
+            } catch (e) {
+                console.error("Ошибка при подготовке User Stories к сохранению:", e);
+                reject(e);
+            }
+        });
+    }
+
+    function addNewStep() {
+        const stepsContainer = document.getElementById('stepsContainer');
+        // Убираем placeholder, если он есть
+        if (stepsContainer.querySelector('.text-muted')) {
+            stepsContainer.innerHTML = '';
+        }
+        const newStepHtml = `
+            <div class="step-edit-row mb-2 p-2 border rounded">
+                <div class="row g-2">
+                    <div class="col-md-1">
+                        <input type="number" class="form-control form-control-sm step-number-input" placeholder="#">
+                    </div>
+                    <div class="col-md-5">
+                        <textarea class="form-control form-control-sm step-action-input" placeholder="Действие"></textarea>
+                    </div>
+                    <div class="col-md-5">
+                        <textarea class="form-control form-control-sm step-result-input" placeholder="Ожидаемый результат"></textarea>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="event.stopPropagation(); this.closest('.step-edit-row').remove();">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        stepsContainer.insertAdjacentHTML('beforeend', newStepHtml);
+    }
+    // Удаление шага
+    function removeStep(stepId, buttonElement) {
+        // Если stepId передан и это число (существующий шаг в БД)
+        if (stepId && !isNaN(stepId)) {
+            if (confirm('Вы уверены, что хотите удалить этот шаг?')) {
+                fetch(`/api/test-steps/${stepId}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Удаляем элемент из DOM
+                            buttonElement.closest('.step-edit-row').remove();
+                            showMessage('Шаг удален', 'success');
+                        } else {
+                            showMessage(data.message || 'Ошибка при удалении шага', 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка удаления шага:', error);
+                        showMessage('Ошибка при удалении шага', 'danger');
+                    });
+            }
+        } else {
+            // Если stepId не передан или не число (новый шаг, добавленный в форму)
+            buttonElement.closest('.step-edit-row').remove();
+            showMessage('Новый шаг удален из формы', 'info');
+        }
+    }
+    // Установка активного тест-кейса
+</script>
+</body>
+</html>

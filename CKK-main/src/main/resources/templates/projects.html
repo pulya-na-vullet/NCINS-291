@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Менеджер Проектов</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            border: none;
+            padding: 1.25rem 1.5rem;
+        }
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+        .btn-outline-danger {
+            border-radius: 10px;
+            font-weight: 600;
+            border: 2px solid #dc3545;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+        .form-control {
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+            transform: translateY(-1px);
+        }
+        .badge {
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .bg-light {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #2c3e50 !important;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+        h1, h2, h3, h4, h5, h6 {
+            color: #2c3e50;
+            font-weight: 700;
+        }
+        .text-muted {
+            color: #6c757d !important;
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #2c3e50;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+        .project-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            padding: 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .project-link:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-decoration: none;
+            color: inherit;
+        }
+        .project-name-display {
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .empty-state {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 1.5rem 2rem;
+        }
+        .modal-header .btn-close {
+            filter: invert(1);
+        }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+        }
+        .toast-notification {
+            min-width: 300px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease-in-out;
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .toast-notification.hide {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .btn-group-sm .btn {
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .input-group .form-control {
+            border-radius: 12px 0 0 12px;
+        }
+        .input-group .btn {
+            border-radius: 0 12px 12px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <!-- Заголовок -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="mb-0">
+                    <i class="fas fa-project-diagram me-3 text-primary"></i>
+                    Менеджер Проектов
+                </h1>
+                <form action="/logout" method="post" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="fas fa-sign-out-alt me-1"></i> Выйти
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Форма создания проекта -->
+    <div class="row mb-5">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Создать новый проект
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="createProjectForm">
+                        <div class="input-group">
+                            <input type="text"
+                                   class="form-control form-control-lg"
+                                   id="projectName"
+                                   name="name"
+                                   placeholder="Введите название проекта..."
+                                   required>
+                            <button class="btn btn-primary btn-lg" type="submit">
+                                <i class="fas fa-plus me-1"></i>
+                                Добавить
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список проектов -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Список проектов
+                    </h5>
+                    <span class="badge bg-light" id="projectsCount">0 проектов</span>
+                </div>
+                <div class="card-body p-0">
+                    <div id="emptyProjects" class="text-center py-5 d-none">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Проекты не найдены</h5>
+                        <p class="text-muted">Создайте первый проект, используя форму выше</p>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th width="5%">#</th>
+                                <th>Название проекта</th>
+                                <th width="15%">Дата создания</th>
+                                <th width="15%">Дата обновления</th>
+                                <th width="15%">Действия</th>
+                            </tr>
+                            </thead>
+                            <tbody id="projectsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Подтверждение удаления
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить проект "<span id="deleteProjectName"></span>"?</p>
+                <p class="text-muted">Это действие нельзя отменить.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Контейнер для всплывающих сообщений -->
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let currentEditId = null;
+    let toastCounter = 0;
+
+    // Функция для отображения сообщений (всплывающие уведомления справа)
+    function showMessage(message, type) {
+        const toastContainer = document.getElementById('toastContainer');
+        const toastId = 'toast-' + (++toastCounter);
+        const alertClass = type === 'success' ? 'bg-success text-white' : 'bg-danger text-white';
+        const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+        const toastHtml = `
+            <div id="${toastId}" class="toast-notification ${alertClass} rounded shadow mb-3 p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas ${iconClass} me-2"></i>
+                    <span>${message}</span>
+                    <button type="button" class="btn-close btn-close-white ms-auto"
+                            onclick="hideToast('${toastId}')"></button>
+                </div>
+            </div>
+        `;
+
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+
+        // Показать уведомление
+        const toastElement = document.getElementById(toastId);
+        setTimeout(() => {
+            toastElement.classList.add('show');
+        }, 10);
+
+        // Автоматическое скрытие через 5 секунд
+        setTimeout(() => {
+            hideToast(toastId);
+        }, 5000);
+    }
+
+    // Функция для скрытия уведомления
+    function hideToast(toastId) {
+        const toastElement = document.getElementById(toastId);
+        if (toastElement) {
+            toastElement.classList.remove('show');
+            toastElement.classList.add('hide');
+            setTimeout(() => {
+                toastElement.remove();
+            }, 300);
+        }
+    }
+
+    // Функция для загрузки проектов
+    function loadProjects() {
+        fetch('/api/projects')
+            .then(response => response.json())
+            .then(projects => {
+                const tbody = document.getElementById('projectsTableBody');
+                const countElement = document.getElementById('projectsCount');
+                const emptyElement = document.getElementById('emptyProjects');
+
+                countElement.textContent = `${projects.length} проектов`;
+
+                if (projects.length === 0) {
+                    emptyElement.classList.remove('d-none');
+                    tbody.innerHTML = '';
+                    return;
+                }
+
+                emptyElement.classList.add('d-none');
+
+                tbody.innerHTML = projects.map((project, index) => `
+                    <tr id="project-row-${project.id}">
+                        <td>${index + 1}</td>
+                        <td>
+                            <a href="/projects/${project.id}" class="project-link">
+                                <div class="project-name-display" id="display-${project.id}">
+                                    ${project.name}
+                                </div>
+                            </a>
+                            <div class="project-name-edit d-none" id="edit-${project.id}">
+                                <div class="input-group">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="edit-input-${project.id}"
+                                           value="${project.name}">
+                                    <button class="btn btn-success btn-sm"
+                                            onclick="saveProject(${project.id})"
+                                            title="Сохранить">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm ms-1"
+                                            onclick="cancelEdit(${project.id})"
+                                            title="Отмена">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                ${new Date(project.createdAt).toLocaleString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}
+                            </small>
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                ${new Date(project.updatedAt).toLocaleString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}
+                            </small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button class="btn btn-outline-primary"
+                                        onclick="editProject(${project.id})"
+                                        title="Редактировать">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger ms-1"
+                                        onclick="deleteProject(${project.id}, '${project.name}')"
+                                        title="Удалить">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки проектов:', error);
+                showMessage('Ошибка загрузки проектов', 'danger');
+            });
+    }
+
+    // Редактирование проекта
+    function editProject(id) {
+        event.preventDefault(); // Предотвращаем переход по ссылке
+
+        // Скрыть предыдущее редактирование, если есть
+        if (currentEditId && currentEditId !== id) {
+            cancelEdit(currentEditId);
+        }
+
+        document.getElementById('display-' + id).classList.add('d-none');
+        document.getElementById('edit-' + id).classList.remove('d-none');
+        currentEditId = id;
+
+        // Добавляем обработчик клика вне области редактирования
+        setTimeout(() => {
+            addClickOutsideHandler(id);
+        }, 10);
+    }
+
+    // Добавление обработчика клика вне области редактирования
+    function addClickOutsideHandler(id) {
+        const editElement = document.getElementById('edit-' + id);
+        const displayElement = document.getElementById('display-' + id);
+
+        function handleClickOutside(event) {
+            // Проверяем, кликнули ли мы вне области редактирования
+            if (!editElement.contains(event.target) &&
+                !displayElement.contains(event.target) &&
+                currentEditId === id) {
+                // Проверяем, не кликнули ли мы на кнопки редактирования/удаления
+                const isActionButton = event.target.closest('.btn-outline-primary') ||
+                    event.target.closest('.btn-outline-danger') ||
+                    event.target.closest('.btn-success') ||
+                    event.target.closest('.btn-danger');
+
+                if (!isActionButton) {
+                    cancelEdit(id);
+                    // Удаляем обработчик после отмены редактирования
+                    document.removeEventListener('click', handleClickOutside);
+                }
+            }
+        }
+
+        // Добавляем обработчик клика на документ
+        document.addEventListener('click', handleClickOutside);
+    }
+
+    // Сохранение проекта
+    function saveProject(id) {
+        const newName = document.getElementById('edit-input-' + id).value.trim();
+
+        if (!newName) {
+            showMessage('Название проекта не может быть пустым!', 'danger');
+            return;
+        }
+
+        fetch(`/api/projects/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: newName })
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Ошибка сохранения проекта');
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    loadProjects();
+                    currentEditId = null;
+                } else {
+                    showMessage(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при обновлении проекта', 'danger');
+            });
+    }
+
+    // Отмена редактирования
+    function cancelEdit(id) {
+        document.getElementById('display-' + id).classList.remove('d-none');
+        document.getElementById('edit-' + id).classList.add('d-none');
+        currentEditId = null;
+    }
+
+    // Удаление проекта
+    function deleteProject(id, name) {
+        event.preventDefault(); // Предотвращаем переход по ссылке
+        document.getElementById('deleteProjectName').textContent = name;
+        window.currentDeleteId = id; // Делаем глобальной переменной
+
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+
+    // Подтверждение удаления
+    document.getElementById('confirmDelete').addEventListener('click', function() {
+        if (window.currentDeleteId) {
+            fetch(`/api/projects/${window.currentDeleteId}`, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Ошибка удаления проекта');
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        loadProjects();
+                        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                    } else {
+                        showMessage(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    showMessage('Ошибка при удалении проекта', 'danger');
+                });
+        }
+    });
+
+    // Обработка формы создания проекта
+    document.getElementById('createProjectForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const projectName = document.getElementById('projectName').value.trim();
+
+        if (!projectName) {
+            showMessage('Название проекта не может быть пустым!', 'danger');
+            return;
+        }
+
+        fetch('/api/projects', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: projectName })
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Ошибка создания проекта');
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    document.getElementById('projectName').value = '';
+                    loadProjects();
+                } else {
+                    showMessage(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при создании проекта', 'danger');
+            });
+    });
+
+    // Загрузка проектов при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        loadProjects();
+    });
+</script>
+</body>
+</html>

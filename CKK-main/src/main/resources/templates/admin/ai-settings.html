@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки AI - Админ панель</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .page-wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
+        .glass { background: rgba(255,255,255,0.95); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
+        .tile { border: 2px solid #eee; border-radius: 14px; transition: all .2s ease; cursor: pointer; }
+        .tile.active { border-color: #dc3545; box-shadow: 0 8px 20px rgba(220,53,69,.15); }
+        .form-label { font-weight: 600; }
+    </style>
+</head>
+<body>
+<div class="page-wrap">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="/admin/users" class="btn btn-light"><i class="bi bi-arrow-left me-1"></i>Назад в админку</a>
+        <form action="/logout" method="post" class="m-0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger"><i class="bi bi-box-arrow-right me-1"></i>Выйти</button>
+        </form>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="glass p-4 mb-3">
+        <h3 class="mb-1">Интеграции AI</h3>
+        <div class="text-muted">Настройка провайдера для AI ревью тест-кейсов и AI анализа соответствия User Stories.</div>
+    </div>
+
+    <div class="glass p-4 mb-3">
+        <div class="tile active p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="fa-brands fa-yandex fa-2x text-danger me-3"></i>
+                    <div>
+                        <div class="fw-bold">YandexGPT</div>
+                        <small class="text-muted">Единственный подключенный провайдер на данный момент</small>
+                    </div>
+                </div>
+                <span class="badge {% if providerSettings.enabled %}bg-success{% else %}bg-secondary{% endif %}">
+                    {% if providerSettings.enabled %}Включен{% else %}Выключен{% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass p-4">
+        <h5 class="mb-3">Параметры подключения YandexGPT</h5>
+        <form method="post" action="/admin/ai-settings">
+            {% csrf_token %}
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="enabled" name="enabled" {% if providerSettings.enabled %}checked{% endif %}>
+                <label class="form-check-label" for="enabled">Включить провайдера</label>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">OAuth API Key (Яндекс)</label>
+                    <input class="form-control" type="password" name="apiKey" placeholder="Вставьте API key">
+                    <small class="text-muted">
+                        Текущее значение: {% if maskedApiKey %}<code>{{ maskedApiKey }}</code>{% else %}не задано{% endif %}
+                    </small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Folder ID</label>
+                    <input class="form-control" type="text" name="folderId" value="{{ providerSettings.folder_id|default:'' }}" placeholder="Например: b1g...">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Model</label>
+                    <input class="form-control" type="text" name="model" value="{{ providerSettings.model|default:'yandexgpt' }}" placeholder="yandexgpt или yandexgpt-lite">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Token refresh interval (ms)</label>
+                    <input class="form-control" type="number" min="1000" name="tokenRefreshIntervalMs" value="{{ providerSettings.token_refresh_interval_ms }}">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Endpoint URL</label>
+                    <input class="form-control" type="text" name="endpointUrl" value="{{ providerSettings.endpoint_url }}">
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end">
+                <button type="button" class="btn btn-outline-secondary me-2" id="testAiConnectionBtn">
+                    <i class="bi bi-wifi me-1"></i>Проверить подключение к AI
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i>Сохранить настройки
+                </button>
+            </div>
+        </form>
+        <div id="aiConnectionTestResult" class="mt-3"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById('testAiConnectionBtn').addEventListener('click', async function () {
+        const resultBox = document.getElementById('aiConnectionTestResult');
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Проверяем...';
+        resultBox.innerHTML = '';
+
+        try {
+            const response = await fetch('/api/admin/ai-settings/test-connection', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            });
+            const data = await response.json();
+            if (data.success) {
+                const responsePreview = data.response ? `<div class="small mt-1"><strong>Ответ:</strong> <code>${data.response}</code></div>` : '';
+                resultBox.innerHTML = `<div class="alert alert-success mb-0">${data.message || 'Подключение успешно'}${responsePreview}</div>`;
+            } else {
+                resultBox.innerHTML = `<div class="alert alert-danger mb-0">${data.message || 'Ошибка подключения'}</div>`;
+            }
+        } catch (err) {
+            resultBox.innerHTML = '<div class="alert alert-danger mb-0">Не удалось проверить подключение к AI провайдеру.</div>';
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-wifi me-1"></i>Проверить подключение к AI';
+        }
+    });
+</script>
+</body>
+</html>
+

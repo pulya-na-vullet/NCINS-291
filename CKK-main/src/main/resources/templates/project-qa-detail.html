@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ project.name }} - QA Детали</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .project-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .project-header h1,
+        .project-header h1 i,
+        .project-header p,
+        .project-header p i {
+            color: white !important;
+        }
+        .test-suite-card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            overflow: hidden;
+        }
+        .test-suite-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .test-suite-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+        }
+        .test-suite-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .test-suite-link:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+        .btn-white {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+            color: #495057;
+        }
+        .btn-white:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .btn-outline-danger {
+            border-radius: 10px;
+            font-weight: 600;
+            border: 2px solid #dc3545;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+        .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        .card-header {
+            border-radius: 15px 15px 0 0 !important;
+            border: none;
+            padding: 1.25rem 1.5rem;
+        }
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+            color: white !important;
+        }
+        .card-header.testsuite {
+            background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+        }
+        .card-header.tools {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        .card-header.default {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .badge {
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .bg-success { background: linear-gradient(135deg, #28a745, #20c997) !important; }
+        .bg-danger { background: linear-gradient(135deg, #dc3545, #fd7e14) !important; }
+        .bg-warning { background: linear-gradient(135deg, #ffc107, #fd7e14) !important; }
+        .bg-secondary { background: linear-gradient(135deg, #6c757d, #495057) !important; }
+        .bg-primary { background: linear-gradient(135deg, #667eea, #764ba2) !important; }
+        .bg-info { background: linear-gradient(135deg, #17a2b8, #6f42c1) !important; }
+        .bg-light {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #2c3e50 !important;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+        .form-control {
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+            transform: translateY(-1px);
+        }
+        h1, h2, h3, h4, h5, h6 {
+            color: #2c3e50;
+            font-weight: 700;
+        }
+        .text-muted {
+            color: #6c757d !important;
+        }
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            background: white;
+        }
+        .search-result-item {
+            cursor: pointer;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s ease;
+        }
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+        .test-suite-actions {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .test-suite-card:hover .test-suite-actions {
+            opacity: 1;
+        }
+        .no-results {
+            padding: 1rem;
+            text-align: center;
+            color: #6c757d;
+        }
+        .qa-tools-card .btn {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+        }
+        .qa-tools-card .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .empty-state {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 1.5rem 2rem;
+        }
+        .modal-header .btn-close {
+            filter: invert(1);
+        }
+        .input-group .form-control {
+            border-radius: 12px 0 0 12px;
+        }
+        .input-group .btn {
+            border-radius: 0 12px 12px 0;
+        }
+        .input-group-text {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-right: none;
+            border-radius: 12px 0 0 12px;
+        }
+        .card-header i {
+            color: white !important;
+        }
+        .card-header .badge {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Новые стили для бокового расположения QA Инструментов */
+        .qa-tools-sidebar {
+            position: sticky;
+            top: 2rem;
+        }
+        .qa-tools-sidebar .card {
+            height: 100%;
+        }
+        .qa-tools-sidebar .btn {
+            margin-bottom: 1rem;
+        }
+        .qa-tools-sidebar .btn:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <!-- Кнопка возврата и выхода -->
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <a href="/project-qa" class="btn btn-white">
+                <i class="fas fa-arrow-left me-2"></i>
+                Вернуться к списку проектов QA
+            </a>
+            <form action="/logout" method="post" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="fas fa-sign-out-alt me-1"></i> Выйти
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Заголовок проекта -->
+    <div class="row">
+        <div class="col-12">
+            <div class="project-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="mb-2 text-white">
+                            <i class="fas fa-clipboard-check me-3 text-white"></i>
+                            <span class="text-white">{{ project.name }}</span>
+                        </h1>
+                        <p class="mb-0 opacity-75 text-white">
+                            <i class="fas fa-hashtag me-2 text-white"></i>
+                            ID: <span class="text-white">{{ project.id }}</span>
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <div class="badge bg-light fs-6">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            Создан: <span>{{ project.created_at|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        <div class="badge bg-success fs-6 mt-2">
+                            <i class="fas fa-vial me-2"></i>
+                            QA Режим
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной контент с боковой панелью QA Инструментов -->
+    <div class="row">
+        <!-- Боковая панель с QA Инструментами -->
+        <div class="col-md-3 mb-4">
+            <div class="qa-tools-sidebar">
+                <div class="card qa-tools-card">
+                    <div class="card-header tools">
+                        <h5 class="mb-0">
+                            <i class="fas fa-tools me-2"></i>
+                            QA Инструменты
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid">
+                            <a href="/project/{{ project.id }}/traceability-matrix"
+                               class="btn btn-outline-success">
+                                <i class="fas fa-table me-2"></i>
+                                Матрица покрытия
+                            </a>
+                            <a href="/project/{{ project.id }}/test-runs"
+                               class="btn btn-outline-info mt-2">
+                                <i class="fas fa-play-circle me-2"></i>
+                                Тест-раны
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Основной контент справа -->
+        <div class="col-md-9">
+            <!-- Информация о проекте -->
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header default">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Информация о проекте
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Название проекта:</label>
+                                        <p class="mb-0 fs-5">{{ project.name }}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">ID проекта:</label>
+                                        <p class="mb-0">{{ project.id }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Дата создания:</label>
+                                        <p class="mb-0">{{ project.created_at|date:"d.m.Y H:i:s" }}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Дата последнего обновления:</label>
+                                        <p class="mb-0">{{ project.updated_at|date:"d.m.Y H:i:s" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Тест-сьюты проекта -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header testsuite d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-vial me-2"></i>
+                                Тест-сьюты проекта
+                            </h5>
+                            <span class="badge" id="testSuitesCount">{{ testSuites|length }} тест-сьютов</span>
+                        </div>
+                        <div class="card-body">
+                            <!-- Форма создания тест-сьюта -->
+                            <div class="row mb-4">
+                                <div class="col-md-8">
+                                    <form id="createTestSuiteForm" class="position-relative">
+                                        <div class="input-group">
+                                            <input type="text"
+                                                   class="form-control"
+                                                   id="testSuiteName"
+                                                   placeholder="Введите название тест-сьюта..."
+                                                   autocomplete="off"
+                                                   required>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-plus me-1"></i>
+                                                Добавить
+                                            </button>
+                                        </div>
+                                        <!-- Результаты поиска -->
+                                        <div id="searchResults" class="search-results d-none position-absolute w-100 mt-1"></div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Список тест-сьютов -->
+                            <div id="testSuitesList">
+                                <div id="emptyTestSuites" class="text-center py-4{% if testSuites %} d-none{% endif %}">
+                                    <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted mb-0">Тест-сьюты не найдены</p>
+                                    <small class="text-muted">Создайте первый тест-сьют с помощью формы выше</small>
+                                </div>
+
+                                <div id="testSuitesContainer">
+                                    {% for testSuite in testSuites %}
+                                    <div class="card test-suite-card" id="test-suite-card-{{ testSuite.id }}">
+                                        <a href="/test-suite/{{ testSuite.id }}" class="test-suite-link">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <h5 class="card-title mb-1">
+                                                            <i class="fas fa-vial me-2 text-info"></i>
+                                                            <span>{{ testSuite.name }}</span>
+                                                        </h5>
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-hashtag me-1"></i>
+                                                            ID: <span>{{ testSuite.id }}</span> |
+                                                            Создан: <span>{{ testSuite.createdAt|date:"d.m.Y H:i" }}</span>
+                                                        </small>
+                                                    </div>
+                                                    <div class="test-suite-actions">
+                                                        <div class="btn-group btn-group-sm">
+                                                            <button class="btn btn-outline-primary edit-test-suite-btn"
+                                                                    type="button"
+                                                                    data-id="{{ testSuite.id }}"
+                                                                    data-name="{{ testSuite.name }}">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                            <button class="btn btn-outline-danger ms-1 delete-test-suite-btn"
+                                                                    type="button"
+                                                                    data-id="{{ testSuite.id }}"
+                                                                    data-name="{{ testSuite.name }}">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Скрытое поле для передачи projectId -->
+<div id="projectData" data-project-id="{{ project.id }}" style="display: none;"></div>
+
+<!-- Модальное окно редактирования тест-сьюта -->
+<div class="modal fade" id="editTestSuiteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>
+                    Редактировать тест-сьют
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editTestSuiteForm">
+                    <input type="hidden" id="editTestSuiteId">
+                    <div class="mb-3">
+                        <label for="editTestSuiteName" class="form-label">Название тест-сьюта:</label>
+                        <input type="text"
+                               class="form-control"
+                               id="editTestSuiteName"
+                               required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveTestSuiteBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления тест-сьюта -->
+<div class="modal fade" id="deleteTestSuiteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Подтверждение удаления
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить тест-сьют "<span id="deleteTestSuiteName"></span>"?</p>
+                <p class="text-muted">Это действие нельзя отменить.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteTestSuiteBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let currentDeleteTestSuiteId = null;
+    let currentEditTestSuiteId = null;
+    let searchTimeout = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const projectId = document.getElementById('projectData').dataset.projectId;
+        initializeSearch(projectId);
+        loadTestSuites(projectId);
+    });
+
+    function initializeSearch(projectId) {
+        const searchInput = document.getElementById('testSuiteName');
+        const searchResults = document.getElementById('searchResults');
+
+        searchInput.addEventListener('input', function() {
+            const term = this.value.trim();
+            clearTimeout(searchTimeout);
+
+            if (term.length === 0) {
+                searchResults.classList.add('d-none');
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/api/projects/${projectId}/test-suites/search?term=${encodeURIComponent(term)}`)
+                    .then(r => r.json())
+                    .then(testSuites => {
+                        const el = document.getElementById('searchResults');
+                        if (testSuites.length > 0) {
+                            el.innerHTML = testSuites.map(ts => `
+                                <div class="search-result-item" onclick="selectTestSuite('${ts.name}')">
+                                    <i class="fas fa-search me-2 text-muted"></i> ${ts.name}
+                                </div>
+                            `).join('');
+                            el.classList.remove('d-none');
+                        } else {
+                            el.innerHTML = '<div class="no-results">Тест-сьюты не найдены. Нажмите Enter для создания.</div>';
+                            el.classList.remove('d-none');
+                        }
+                    })
+                    .catch(() => {
+                        const el = document.getElementById('searchResults');
+                        el.innerHTML = '<div class="no-results text-danger">Ошибка поиска</div>';
+                        el.classList.remove('d-none');
+                    });
+            }, 300);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('d-none');
+            }
+        });
+    }
+
+    function selectTestSuite(name) {
+        document.getElementById('testSuiteName').value = name;
+        document.getElementById('searchResults').classList.add('d-none');
+    }
+
+    document.getElementById('createTestSuiteForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const projectId = document.getElementById('projectData').dataset.projectId;
+        const name = document.getElementById('testSuiteName').value.trim();
+        if (!name) {
+            alert('Название не может быть пустым!');
+            return;
+        }
+
+        fetch(`/api/projects/${projectId}/test-suites`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('testSuiteName').value = '';
+                    document.getElementById('searchResults').classList.add('d-none');
+                    loadTestSuites(projectId);
+                } else {
+                    alert(data.message || 'Ошибка при создании');
+                }
+            })
+            .catch(() => alert('Ошибка при создании тест-сьюта'));
+    });
+
+    function loadTestSuites(projectId) {
+        fetch(`/api/projects/${projectId}/test-suites`)
+            .then(r => r.json())
+            .then(testSuites => {
+                const container = document.getElementById('testSuitesContainer');
+                const countEl = document.getElementById('testSuitesCount');
+                const emptyEl = document.getElementById('emptyTestSuites');
+
+                countEl.textContent = `${testSuites.length} тест-сьютов`;
+                if (testSuites.length === 0) {
+                    emptyEl.classList.remove('d-none');
+                    container.innerHTML = '';
+                } else {
+                    emptyEl.classList.add('d-none');
+                    container.innerHTML = testSuites.map(ts => `
+                        <div class="card test-suite-card" id="test-suite-card-${ts.id}">
+                            <a href="/test-suite/${ts.id}" class="test-suite-link">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h5 class="card-title mb-1">
+                                                <i class="fas fa-vial me-2 text-info"></i>
+                                                ${ts.name}
+                                            </h5>
+                                            <small class="text-muted">
+                                                <i class="fas fa-hashtag me-1"></i>
+                                                ID: ${ts.id} |
+                                                Создан: ${new Date(ts.createdAt).toLocaleString('ru-RU')}
+                                            </small>
+                                        </div>
+                                        <div class="test-suite-actions">
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-primary edit-test-suite-btn"
+                                                        data-id="${ts.id}"
+                                                        data-name="${ts.name.replace(/"/g, '&quot;')}">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-outline-danger ms-1 delete-test-suite-btn"
+                                                        data-id="${ts.id}"
+                                                        data-name="${ts.name.replace(/"/g, '&quot;')}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    `).join('');
+                }
+            })
+            .catch(() => alert('Не удалось загрузить тест-сьюты'));
+    }
+
+    // Делегированные обработчики
+    document.addEventListener('click', function(e) {
+        const editBtn = e.target.closest('.edit-test-suite-btn');
+        const deleteBtn = e.target.closest('.delete-test-suite-btn');
+
+        if (editBtn) {
+            editTestSuite(editBtn.dataset.id, editBtn.dataset.name);
+        }
+        if (deleteBtn) {
+            deleteTestSuite(deleteBtn.dataset.id, deleteBtn.dataset.name);
+        }
+    });
+
+    function editTestSuite(id, name) {
+        currentEditTestSuiteId = id;
+        document.getElementById('editTestSuiteId').value = id;
+        document.getElementById('editTestSuiteName').value = name;
+        new bootstrap.Modal(document.getElementById('editTestSuiteModal')).show();
+    }
+
+    document.getElementById('saveTestSuiteBtn').addEventListener('click', function() {
+        const id = document.getElementById('editTestSuiteId').value;
+        const name = document.getElementById('editTestSuiteName').value.trim();
+        const projectId = document.getElementById('projectData').dataset.projectId;
+
+        if (!name) {
+            alert('Название не может быть пустым!');
+            return;
+        }
+
+        fetch(`/api/test-suites/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('editTestSuiteModal')).hide();
+                    loadTestSuites(projectId);
+                } else {
+                    alert(data.message || 'Ошибка при сохранении');
+                }
+            })
+            .catch(() => alert('Ошибка при обновлении'));
+    });
+
+    function deleteTestSuite(id, name) {
+        currentDeleteTestSuiteId = id;
+        document.getElementById('deleteTestSuiteName').textContent = name;
+        new bootstrap.Modal(document.getElementById('deleteTestSuiteModal')).show();
+    }
+
+    document.getElementById('confirmDeleteTestSuiteBtn').addEventListener('click', function() {
+        if (!currentDeleteTestSuiteId) return;
+        const projectId = document.getElementById('projectData').dataset.projectId;
+
+        fetch(`/api/test-suites/${currentDeleteTestSuiteId}`, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('deleteTestSuiteModal')).hide();
+                    loadTestSuites(projectId);
+                } else {
+                    alert(data.message || 'Ошибка при удалении');
+                }
+            })
+            .catch(() => alert('Ошибка при удалении'));
+    });
+
+    document.getElementById('testSuiteName').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('createTestSuiteForm').dispatchEvent(new Event('submit'));
+        }
+    });
+</script>
+</body>
+</html>
